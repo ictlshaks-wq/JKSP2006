@@ -68,6 +68,7 @@
             <div id="pegawai-sort-control" class="w-full md:w-56 transition-all">
                 <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Susunan</label>
                 <select id="sortBy" onchange="render()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none cursor-pointer">
+                    <option value="jawatan">Hierarki Jawatan (Pangkat)</option>
                     <option value="name">Nama A-Z</option>
                     <option value="countDesc">Bilangan portfolio tertinggi</option>
                     <option value="countAsc">Bilangan portfolio terendah</option>
@@ -122,6 +123,9 @@
                     <button onclick="switchView('program')" id="tab-program" class="px-5 py-3 border-b-2 font-bold text-sm transition-colors border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 whitespace-nowrap">
                         <i class="ph ph-folders"></i> Senarai Program / JK
                     </button>
+                    <button onclick="switchView('unit')" id="tab-unit" class="px-5 py-3 border-b-2 font-bold text-sm transition-colors border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 whitespace-nowrap">
+                        <i class="ph ph-buildings"></i> Senarai Unit
+                    </button>
                     <button onclick="switchView('admin')" id="tab-admin" class="ml-auto px-5 py-3 border-b-2 font-bold text-sm transition-colors border-transparent text-slate-400 hover:text-slate-700 flex items-center gap-2 whitespace-nowrap">
                         <i class="ph-fill ph-lock-key" id="lock-icon"></i> Kemaskini Data
                     </button>
@@ -158,6 +162,11 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-500 mb-1">Nama Pegawai / Entiti</label>
                             <input id="personName" placeholder="Contoh: Ahmad Bushra..." class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Jawatan Hakiki / Unit</label>
+                            <input id="personJawatan" placeholder="Contoh: Penolong Pengarah TMK" class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         
                         <div class="h-px bg-slate-200 my-2"></div>
@@ -676,6 +685,57 @@ let tableMode = false;
 let currentView = 'pegawai';
 let currentCatFilter = '';
 
+// --- Jawatan Mapping ---
+const PEGAWAI_JAWATAN_MAP = {
+    "Encik Yusof bin Kassim": "Timbalan Pengarah",
+    "Puan Zalina binti Abd Latif": "Ketua Pembantu Tadbir",
+    "Puan Siti Hazar binti Hussin": "Pembantu Tadbir",
+    "Puan Jalilah binti Salim": "Ketua Penolong Pengarah Kanan Bahasa",
+    "Encik Mat Ganti bin Mansor": "Ketua Penolong Pengarah Bahasa",
+    "Tuan Haji Shamdzul bin Ahmad": "Penolong Pengarah Bahasa",
+    "Puan Wee Ting Nee": "Penolong Pengarah Bahasa",
+    "Encik Yugendren A/L Perumal": "Penolong Pengarah Bahasa",
+    "Puan Hajah Noor Siah binti Md Top": "Ketua Penolong Pengarah Kanan Sains & Matematik",
+    "Puan Zalina binti Zulkifly": "Ketua Penolong Pengarah Kanan Sains & Matematik",
+    "Puan Masrinawati binti Mohd Arifin": "Penolong Pengarah Sains & Matematik",
+    "Encik Khairul Anuar bin Amir Nurdin": "Penolong Pengarah Sains & Matematik",
+    "Encik Freezaillah bin Padzil": "Penolong Pengarah Sains & Matematik",
+    "Encik Mohd Shahril bin Ghazali": "Penolong Pengarah Sains & Matematik",
+    "Puan Teh Azhua binti Mohamed Isa": "Penolong Pengarah Sains & Matematik",
+    "Puan Hazlina binti Mohamad Sood": "Ketua Penolong Pengarah Kanan Sains Sosial",
+    "Puan Arbiknah binti Hussain": "Penolong Pengarah Sains Sosial",
+    "Encik Farid Abdillah bin Abu Talib": "Penolong Pengarah Sains Sosial",
+    "Puan Nurul Anis binti Abdul Halim": "Penolong Pengarah Sains Sosial",
+    "Encik Mohammad Dzulkhairy bin Abdul Rahman": "Ketua Penolong Pengarah Kanan TVET",
+    "Encik Mohammed Khairul Anwar bin Mukhtar": "Penolong Pengarah TVET",
+    "Puan Nurulsyuhada binti Mohamad Razali": "Penolong Pengarah TVET",
+    "Tuan Haji Mohd Suhaidi bin Mohd Nordin": "Ketua Penolong Pengarah Kanan TMK",
+    "Tuan Haji Ahmad Bushra bin Abdul Rahman": "Penolong Pengarah TMK",
+    "Tuan Haji Mior Ridzuan bin Riza": "Penolong Pengarah TMK",
+    "Encik Mohd Sham Salleh bin Mohd Rashidi": "Penolong Pengarah TMK",
+    "Encik Mohd Zaini bin Mohd Zin": "Penolong Pengarah TMK",
+    "Cik Wan Naliza binti Wan Jaafar": "Penolong Pengarah Mentor TIMSS & PISA"
+};
+
+function getJawatan(nama) {
+    return PEGAWAI_JAWATAN_MAP[nama] || "";
+}
+
+// --- Menentukan Kumpulan Unit Berdasarkan Jawatan ---
+function getUnitFromJawatan(jawatan, nama) {
+    const j = (jawatan || '').toLowerCase();
+    
+    if (j.includes('timbalan pengarah') || j.includes('pembantu tadbir')) return 'PENGURUSAN TERTINGGI SEKTOR PEMBELAJARAN';
+    if (j.includes('bahasa')) return 'UNIT BAHASA';
+    if (j.includes('sains & matematik') || j.includes('sains dan matematik')) return 'UNIT SAINS DAN MATEMATIK';
+    if (j.includes('sains sosial')) return 'UNIT SAINS SOSIAL';
+    if (j.includes('tvet')) return 'UNIT TVET';
+    if (j.includes('tmk') || j.includes('teknologi maklumat')) return 'UNIT TEKNOLOGI MAKLUMAT & KOMUNIKASI';
+    if (j.includes('mentor') || j.includes('timss') || j.includes('pisa')) return 'MENTOR TIMSS DAN PISA';
+    
+    return 'UNIT LAIN-LAIN / ENTITI KHAS';
+}
+
 // --- Auth Variables ---
 let authCallback = null;
 let isAuthorized = sessionStorage.getItem('sp_jk_auth') === 'true';
@@ -685,7 +745,7 @@ window.onload = () => {
     if (isAuthorized) {
         document.getElementById('lock-icon').className = 'ph-fill ph-unlock text-emerald-500';
     }
-}
+};
 
 // --- Custom Modal Logic ---
 function showModal(id) {
@@ -814,7 +874,7 @@ function filterByName(name) {
     document.getElementById('search').value = name;
     
     // Switch to Pegawai view automatically when searching by name (if not in admin view)
-    if (currentView === 'program') {
+    if (currentView === 'program' || currentView === 'unit') {
         switchView('pegawai');
     } else {
         render();
@@ -834,6 +894,22 @@ function escapeHTML(str) {
 
 function normalize(s) { return (s || '').toLowerCase(); }
 
+// Menentukan kedudukan hierarki bagi Jawatan Hakiki pada Page 1 dan Page 3
+function getJawatanRank(jawatan, nama) {
+    const j = (jawatan || '').toLowerCase();
+    const n = (nama || '').toLowerCase();
+    
+    if (j.includes('timbalan pengarah') || n.includes('timbalan pengarah')) return 1;
+    if (j.includes('ketua penolong pengarah kanan') || n.includes('ketua penolong pengarah kanan')) return 2;
+    if (j.includes('ketua penolong pengarah') || n.includes('ketua penolong pengarah')) return 3;
+    if (j.includes('mentor timss') || j.includes('mentor pisa') || n.includes('mentor timss')) return 5;
+    if (j.includes('penolong pengarah') || n.includes('penolong pengarah')) return 4;
+    if (j.includes('ketua pembantu tadbir') || n.includes('ketua pembantu tadbir')) return 6;
+    if (j.includes('pembantu tadbir') || n.includes('pembantu tadbir')) return 7;
+    if (j.match(/\bpp\b/) || j.startsWith('pp ') || n.match(/\bpp\b/) || n.startsWith('pp ')) return 8;
+    return 99; // Selebihnya
+}
+
 function getFilteredData() {
     const q = normalize(document.getElementById('search').value);
     const role = document.getElementById('roleFilter').value;
@@ -843,11 +919,77 @@ function getFilteredData() {
         const matchRole = !role || p.portfolio.some(x => x.peranan === role);
         return matchQ && matchRole;
     });
+    
     const sortBy = document.getElementById('sortBy').value;
-    if (sortBy === 'name') items.sort((a,b)=>a.nama.localeCompare(b.nama));
-    if (sortBy === 'countDesc') items.sort((a,b)=>b.portfolio.length-a.portfolio.length || a.nama.localeCompare(b.nama));
-    if (sortBy === 'countAsc') items.sort((a,b)=>a.portfolio.length-b.portfolio.length || a.nama.localeCompare(b.nama));
+    
+    if (sortBy === 'jawatan') {
+        items.sort((a, b) => {
+            const rankA = getJawatanRank(a.jawatan || getJawatan(a.nama), a.nama);
+            const rankB = getJawatanRank(b.jawatan || getJawatan(b.nama), b.nama);
+            return rankA - rankB || a.nama.localeCompare(b.nama); // Jika rank sama, susun A-Z
+        });
+    } else if (sortBy === 'name') {
+        items.sort((a,b)=>a.nama.localeCompare(b.nama));
+    } else if (sortBy === 'countDesc') {
+        items.sort((a,b)=>b.portfolio.length-a.portfolio.length || a.nama.localeCompare(b.nama));
+    } else if (sortBy === 'countAsc') {
+        items.sort((a,b)=>a.portfolio.length-b.portfolio.length || a.nama.localeCompare(b.nama));
+    }
+    
     return items;
+}
+
+// FUNGSI BARU: Mengumpul data berdasarkan Unit untuk Page 3
+function getUnitData() {
+    const q = normalize(document.getElementById('search').value);
+    const unitsObj = {};
+
+    data.forEach(p => {
+        const jawatan = p.jawatan || getJawatan(p.nama);
+        const unitName = getUnitFromJawatan(jawatan, p.nama);
+        
+        // Tapis melalui Carian
+        const text = normalize(p.nama + ' ' + jawatan + ' ' + p.portfolio.map(x => x.peranan + ' ' + x.program).join(' '));
+        if (!q || text.includes(q)) {
+            if (!unitsObj[unitName]) unitsObj[unitName] = [];
+            unitsObj[unitName].push({
+                ...p,
+                jawatanText: jawatan,
+                rank: getJawatanRank(jawatan, p.nama)
+            });
+        }
+    });
+
+    // Susunan rasmi senarai unit
+    const unitOrder = [
+        'PENGURUSAN TERTINGGI SEKTOR PEMBELAJARAN',
+        'UNIT BAHASA',
+        'UNIT SAINS DAN MATEMATIK',
+        'UNIT SAINS SOSIAL',
+        'UNIT TVET',
+        'UNIT TEKNOLOGI MAKLUMAT & KOMUNIKASI',
+        'MENTOR TIMSS DAN PISA',
+        'UNIT LAIN-LAIN / ENTITI KHAS'
+    ];
+
+    const result = [];
+    
+    unitOrder.forEach(o => {
+        if (unitsObj[o]) {
+            unitsObj[o].sort((a, b) => a.rank - b.rank || a.nama.localeCompare(b.nama));
+            result.push({ unit: o, pegawai: unitsObj[o] });
+        }
+    });
+    
+    // Tambah mana-mana unit baru yang tidak dijangka
+    Object.keys(unitsObj).forEach(k => {
+        if (!unitOrder.includes(k)) {
+            unitsObj[k].sort((a, b) => a.rank - b.rank || a.nama.localeCompare(b.nama));
+            result.push({ unit: k, pegawai: unitsObj[k] });
+        }
+    });
+
+    return result;
 }
 
 function renderRoleFilter() {
@@ -871,6 +1013,11 @@ function renderStats(itemsCount) {
         document.getElementById('shownPeople').nextElementSibling.textContent = "PROGRAM DIPAPAR";
         document.getElementById('topCount').textContent = "-";
         document.getElementById('topCount').nextElementSibling.textContent = "N/A";
+    } else if (currentView === 'unit') {
+        document.getElementById('shownPeople').textContent = itemsCount;
+        document.getElementById('shownPeople').nextElementSibling.textContent = "PEGAWAI DIPAPAR";
+        document.getElementById('topCount').textContent = "-";
+        document.getElementById('topCount').nextElementSibling.textContent = "N/A";
     } else {
         // For both Pegawai and Admin views
         document.getElementById('shownPeople').textContent = itemsCount;
@@ -890,7 +1037,7 @@ function switchView(view) {
     currentView = view;
     
     // 1. Tetapkan semula butang tab
-    ['pegawai', 'program', 'admin'].forEach(v => {
+    ['pegawai', 'program', 'unit', 'admin'].forEach(v => {
         const el = document.getElementById('tab-' + v);
         el.className = "px-5 py-3 border-b-2 font-bold text-sm transition-colors border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 whitespace-nowrap" + (v === 'admin' ? " ml-auto" : "");
     });
@@ -915,11 +1062,15 @@ function switchView(view) {
     if (view === 'pegawai') {
         document.getElementById('pegawai-filter-control').classList.remove('hidden');
         document.getElementById('pegawai-sort-control').classList.remove('hidden');
-        mainCol.className = 'lg:col-span-3 transition-all duration-300'; // Paparan penuh (View Only)
+        mainCol.className = 'lg:col-span-3 transition-all duration-300'; // Paparan penuh
         sidebar.classList.add('hidden');
     } else if (view === 'program') {
         document.getElementById('program-quick-filters').classList.remove('hidden');
-        mainCol.className = 'lg:col-span-3 transition-all duration-300'; // Paparan penuh (View Only)
+        mainCol.className = 'lg:col-span-3 transition-all duration-300'; // Paparan penuh
+        sidebar.classList.add('hidden');
+    } else if (view === 'unit') {
+        // Paparan Senarai Unit tidak memerlukan sorting dropdown, cuma guna search
+        mainCol.className = 'lg:col-span-3 transition-all duration-300'; // Paparan penuh
         sidebar.classList.add('hidden');
     } else if (view === 'admin') {
         document.getElementById('pegawai-filter-control').classList.remove('hidden');
@@ -1052,7 +1203,7 @@ function getFilteredProgramData() {
     return categories;
 }
 
-// FUNGSI BARU: Menentukan kedudukan susunan berdasarkan peranan rasmi
+// Menentukan kedudukan susunan berdasarkan peranan rasmi dalam program
 function getRoleRank(role) {
     const r = role.toLowerCase();
     if (r === 'pengerusi') return 1;
@@ -1077,8 +1228,17 @@ function render() {
         renderProgramView(categorizedPrograms);
         return;
     }
+    
+    // Paparan SENARAI UNIT
+    if (currentView === 'unit') {
+        const unitData = getUnitData();
+        const totalPeople = unitData.reduce((acc, u) => acc + u.pegawai.length, 0);
+        renderStats(totalPeople);
+        renderUnitView(unitData);
+        return;
+    }
 
-    // Paparan IKUT PEGAWAI (Read Only) & ADMIN (Editable)
+    // Paparan SENARAI PEGAWAI (Read Only) & ADMIN (Editable)
     const items = getFilteredData();
     renderStats(items.length);
     const list = document.getElementById('list');
@@ -1098,11 +1258,15 @@ function render() {
         return;
     }
 
-    list.innerHTML = items.map(p => `
+    list.innerHTML = items.map(p => {
+        const jawatanText = p.jawatan || getJawatan(p.nama);
+        const displayNama = jawatanText ? `${escapeHTML(p.nama)} <span class="text-blue-600 text-sm sm:text-base font-bold ml-1">- ${escapeHTML(jawatanText.toUpperCase())}</span>` : escapeHTML(p.nama);
+        
+        return `
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 print-card hover:shadow-md transition-shadow relative">
             <div class="flex justify-between items-start gap-4 mb-4 pb-4 border-b border-slate-100">
                 <div>
-                    <h3 class="text-lg font-bold text-slate-800 m-0 pr-10">${escapeHTML(p.nama)}</h3>
+                    <h3 class="text-lg font-bold text-slate-800 m-0 pr-10 leading-snug">${displayNama}</h3>
                     <p class="text-xs text-slate-500 mt-1"><i class="ph ph-briefcase"></i> ${p.portfolio.length} portfolio didaftarkan</p>
                 </div>
                 <span class="bg-blue-50 text-blue-700 rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap border border-blue-100 flex items-center gap-1 shrink-0">
@@ -1133,7 +1297,8 @@ function render() {
             </div>
             ` : ''}
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function renderTable(items) {
@@ -1144,16 +1309,21 @@ function renderTable(items) {
         <table class="w-full text-left border-collapse min-w-[600px]">
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs uppercase tracking-wider">
-                    <th class="p-4 font-semibold w-1/3">Nama Pegawai</th>
+                    <th class="p-4 font-semibold w-1/3">Nama Pegawai & Jawatan</th>
                     <th class="p-4 font-semibold w-16 text-center">Bil.</th>
                     <th class="p-4 font-semibold">Jawatan dan Peranan</th>
                     ${currentView === 'admin' ? `<th class="p-4 font-semibold w-24 text-center no-print">Tindakan</th>` : ''}
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-sm">
-                ${items.map(p => `
+                ${items.map(p => {
+                    const jawatanText = p.jawatan || getJawatan(p.nama);
+                    return `
                 <tr class="hover:bg-slate-50/50 transition-colors align-top">
-                    <td class="p-4 font-bold text-slate-800">${escapeHTML(p.nama)}</td>
+                    <td class="p-4">
+                        <div class="font-bold text-slate-800">${escapeHTML(p.nama)}</div>
+                        ${jawatanText ? `<div class="text-xs font-bold text-blue-600 mt-1 uppercase">${escapeHTML(jawatanText)}</div>` : ''}
+                    </td>
                     <td class="p-4 text-center font-medium text-slate-500">
                         <span class="bg-slate-100 px-2 py-1 rounded-md">${p.portfolio.length}</span>
                     </td>
@@ -1173,11 +1343,71 @@ function renderTable(items) {
                             <i class="ph ph-pencil-simple text-lg"></i>
                         </button>
                     </td>` : ''}
-                </tr>`).join('')}
+                </tr>`}).join('')}
             </tbody>
         </table>
     </div>`;
 }
+
+// FUNGSI BARU: Paparan Senarai Unit
+function renderUnitView(unitData) {
+    const list = document.getElementById('list');
+    
+    if (unitData.length === 0) {
+        list.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 p-10 text-center text-slate-500 shadow-sm print-card">
+            <i class="ph ph-magnifying-glass text-4xl mb-3 text-slate-300"></i><br>Tiada unit / pegawai ditemui.
+        </div>`;
+        return;
+    }
+
+    // Untuk Senarai Unit, jadual adalah yang paling sesuai supaya serupa dengan format rujukan gambar.
+    document.getElementById('viewIcon').className = 'ph ph-table text-xl';
+
+    list.innerHTML = unitData.map(u => `
+        <div class="mb-8 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden print-card break-inside-avoid">
+            <div class="bg-slate-800 text-white px-6 py-4 border-b border-slate-200">
+                <h2 class="text-lg font-bold uppercase tracking-wider flex items-center gap-2">
+                    <i class="ph-fill ph-users-three text-blue-300"></i> ${escapeHTML(u.unit)}
+                </h2>
+            </div>
+            <div class="p-0 overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[600px] text-sm">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                            <th class="p-4 font-semibold text-center w-12">#</th>
+                            <th class="p-4 font-semibold w-1/3">Nama & Jawatan Hakiki</th>
+                            <th class="p-4 font-semibold">Senarai Peranan & Program (JK)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        ${u.pegawai.map((p, idx) => `
+                            <tr class="hover:bg-slate-50/50 transition-colors align-top">
+                                <td class="p-4 text-center font-medium text-slate-500">${idx + 1}</td>
+                                <td class="p-4 border-r border-slate-50">
+                                    <div class="font-bold text-slate-800">${escapeHTML(p.nama)}</div>
+                                    ${p.jawatanText ? `<div class="text-xs font-bold text-blue-600 mt-1 uppercase">${escapeHTML(p.jawatanText)}</div>` : ''}
+                                </td>
+                                <td class="p-4">
+                                    ${p.portfolio.length > 0 ? `
+                                    <ul class="space-y-2 text-slate-700">
+                                        ${p.portfolio.map(x => `
+                                            <li class="flex items-start gap-2">
+                                                <span class="bg-slate-100 text-slate-600 text-[11px] font-bold px-2 py-0.5 rounded border border-slate-200 shrink-0 mt-0.5">${escapeHTML(x.peranan)}</span>
+                                                <span>${escapeHTML(x.program)}</span>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                    ` : '<span class="text-slate-400 italic">Tiada portfolio direkodkan</span>'}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `).join('');
+}
+
 
 // Fungsi pembantu untuk membezakan warna mengikut kategori
 function getCategoryColor(kategori) {
@@ -1343,6 +1573,7 @@ function clearForm() {
     requireAuth(() => {
         document.getElementById('editIndex').value = '';
         document.getElementById('personName').value = '';
+        document.getElementById('personJawatan').value = '';
         document.getElementById('roleInput').value = '';
         document.getElementById('programInput').value = '';
         tempPortfolio = [];
@@ -1417,11 +1648,12 @@ function removeTemp(i) {
 function savePerson() {
     requireAuth(() => {
         const nama = document.getElementById('personName').value.trim();
+        const jawatan = document.getElementById('personJawatan').value.trim();
         if (!nama) { customAlert('Sila masukkan nama pegawai.'); return; }
         if (!tempPortfolio.length) { customAlert('Sila tambah sekurang-kurangnya satu jawatan/peranan dalam senarai.'); return; }
         
         const idx = document.getElementById('editIndex').value;
-        const item = {nama, portfolio: tempPortfolio};
+        const item = {nama, jawatan, portfolio: tempPortfolio};
         
         if (idx === '') {
             data.unshift(item); // Add to top
@@ -1440,6 +1672,7 @@ function editPerson(idx) {
         const p = data[idx];
         document.getElementById('editIndex').value = idx;
         document.getElementById('personName').value = p.nama;
+        document.getElementById('personJawatan').value = p.jawatan || getJawatan(p.nama);
         tempPortfolio = JSON.parse(JSON.stringify(p.portfolio));
         renderFormPortfolio();
         window.scrollTo({top:0, behavior:'smooth'});
@@ -1459,8 +1692,8 @@ function deletePersonConfirm(idx) {
 
 // --- Eksport & Import ---
 function exportCSV() {
-    let rows = [['Nama Pegawai','Bil','Jawatan / Peranan','JK / Program']];
-    data.forEach(p => p.portfolio.forEach((x,i)=>rows.push([p.nama, i+1, x.peranan, x.program])));
+    let rows = [['Nama Pegawai', 'Jawatan/Unit', 'Bil', 'Jawatan / Peranan', 'JK / Program']];
+    data.forEach(p => p.portfolio.forEach((x,i)=>rows.push([p.nama, p.jawatan || getJawatan(p.nama), i+1, x.peranan, x.program])));
     const csv = rows.map(r => r.map(v => '"' + String(v).replaceAll('"','""') + '"').join(',')).join('\n');
     downloadFile('pemetaan_jk_sp_2026.csv', csv, 'text/csv;charset=utf-8');
 }
