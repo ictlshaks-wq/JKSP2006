@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pemetaan JK Sektor Pembelajaran 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        
+        /* Custom Scrollbar for form list */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white !important; font-size: 12px; }
+            .print-card { box-shadow: none !important; border: 1px solid #cbd5e1 !important; break-inside: avoid; margin-bottom: 1rem; }
+            .print-grid { display: block !important; }
+            #main-content-col { grid-column: span 3 / span 3 !important; }
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-br from-slate-900 to-blue-800 text-white py-8 px-4 shadow-md no-print">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center gap-6">
+            <!-- Logo JPN -->
+            <img src="https://raw.githubusercontent.com/ictlshaks-wq/LOGODGURU/main/LOGO%20JPN%20PUTIH.png" alt="Logo JPN Pahang" class="h-16 md:h-24 object-contain flex-shrink-0">
+            
+            <!-- Teks Tajuk -->
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold mb-2">
+                    Pemetaan JK Sektor Pembelajaran 2026
+                </h1>
+                <p class="text-blue-100 opacity-90 text-sm max-w-3xl leading-relaxed">
+                    Sistem paparan dan carian maklumat pegawai, jawatan serta JK/program yang terlibat di Sektor Pembelajaran.
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6 w-full flex-grow flex flex-col gap-6 -mt-6">
+        
+        <!-- Toolbar -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 no-print relative z-10 flex flex-col md:flex-row gap-4 items-end">
+            <div class="flex-1 w-full">
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Carian</label>
+                <div class="relative">
+                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input id="search" placeholder="Cari nama, peranan atau JK..." oninput="render()" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                </div>
+            </div>
+            
+            <div id="pegawai-filter-control" class="w-full md:w-48 transition-all">
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Tapisan Peranan</label>
+                <select id="roleFilter" onchange="render()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none cursor-pointer">
+                    <option value="">Semua peranan</option>
+                </select>
+            </div>
+            
+            <div id="pegawai-sort-control" class="w-full md:w-56 transition-all">
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Susunan</label>
+                <select id="sortBy" onchange="render()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none cursor-pointer">
+                    <option value="name">Nama A-Z</option>
+                    <option value="countDesc">Bilangan portfolio tertinggi</option>
+                    <option value="countAsc">Bilangan portfolio terendah</option>
+                </select>
+            </div>
+
+            <div class="flex flex-wrap gap-2 w-full md:w-auto mt-2 md:mt-0">
+                <button onclick="showNameListModal()" class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-medium py-2.5 px-5 rounded-xl transition-colors shadow-sm">
+                    <i class="ph ph-list-dashes text-lg"></i> Senarai Nama
+                </button>
+                <button onclick="window.print()" class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-2.5 px-5 rounded-xl transition-colors shadow-sm">
+                    <i class="ph ph-printer text-lg"></i> Cetak
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats & Notice -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 no-print">
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
+                <span class="text-3xl font-bold text-slate-800" id="totalPeople">0</span>
+                <span class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">Nama/Entiti</span>
+            </div>
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
+                <span class="text-3xl font-bold text-blue-600" id="totalPortfolios">0</span>
+                <span class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">Jumlah Portfolio</span>
+            </div>
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
+                <span class="text-3xl font-bold text-teal-600" id="shownPeople">0</span>
+                <span class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">PEGAWAI DIPAPAR</span>
+            </div>
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
+                <span class="text-3xl font-bold text-orange-500" id="topCount">0</span>
+                <span class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">PORTFOLIO TERTINGGI</span>
+            </div>
+        </div>
+
+        <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 text-sm text-orange-800 flex gap-3 items-start no-print">
+            <i class="ph ph-info text-xl text-orange-500 mt-0.5 flex-shrink-0"></i>
+            <p><b>Nota:</b> Item yang tidak mempunyai nama khusus dalam dokumen dikekalkan sebagai entiti seperti <i>“Semua Unit Sektor Pembelajaran”</i> atau <i>“Semua Pemegang Inisiatif”</i> supaya pemetaan lebih lengkap.</p>
+        </div>
+
+        <!-- Layout Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 print-grid">
+            
+            <!-- Main List -->
+            <div id="main-content-col" class="lg:col-span-3 transition-all duration-300">
+                <!-- Navigation Tabs -->
+                <div class="flex gap-2 border-b border-slate-200 mb-4 no-print overflow-x-auto custom-scroll">
+                    <button onclick="switchView('pegawai')" id="tab-pegawai" class="px-5 py-3 border-b-2 font-bold text-sm transition-colors border-blue-600 text-blue-600 flex items-center gap-2 whitespace-nowrap">
+                        <i class="ph ph-user"></i> Ikut Pegawai
+                    </button>
+                    <button onclick="switchView('program')" id="tab-program" class="px-5 py-3 border-b-2 font-bold text-sm transition-colors border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 whitespace-nowrap">
+                        <i class="ph ph-folders"></i> Senarai Program / JK
+                    </button>
+                    <button onclick="switchView('admin')" id="tab-admin" class="ml-auto px-5 py-3 border-b-2 font-bold text-sm transition-colors border-transparent text-slate-400 hover:text-slate-700 flex items-center gap-2 whitespace-nowrap">
+                        <i class="ph-fill ph-lock-key" id="lock-icon"></i> Kemaskini Data
+                    </button>
+                </div>
+
+                <!-- Program Quick Filters (Hanya muncul jika Tab Program dipilih) -->
+                <div id="program-quick-filters" class="hidden flex gap-2 overflow-x-auto custom-scroll pb-3 mb-2 no-print items-center">
+                    <span class="text-[11px] font-bold text-slate-400 mr-1 uppercase tracking-wider">Tapisan:</span>
+                    <button onclick="setCatFilter('')" id="btn-cat-all" class="cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border border-slate-800 bg-slate-800 text-white shadow-sm">Semua</button>
+                    <button onclick="setCatFilter('Utama')" id="btn-cat-Utama" class="cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100">JK Utama (1-7)</button>
+                    <button onclick="setCatFilter('8.1')" id="btn-cat-8.1" class="cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100">8.1 Pegawai Meja</button>
+                    <button onclick="setCatFilter('8.2')" id="btn-cat-8.2" class="cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100">8.2 Program Khas</button>
+                    <button onclick="setCatFilter('8.3')" id="btn-cat-8.3" class="cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100">8.3 Tugas Khas</button>
+                </div>
+
+                <div id="list" class="flex flex-col gap-4">
+                    <!-- Cards will be injected here -->
+                </div>
+            </div>
+
+            <!-- Sidebar Form & Actions (Admin Only) -->
+            <aside id="admin-sidebar" class="hidden flex flex-col gap-5 no-print lg:sticky lg:top-6 self-start">
+                
+                <!-- Add/Edit Form -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                    <div class="bg-slate-50 border-b border-slate-200 px-5 py-4">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                            <i class="ph ph-note-pencil text-blue-600 text-xl"></i> Tambah / Edit Pegawai
+                        </h3>
+                    </div>
+                    <div class="p-5 flex flex-col gap-4">
+                        <input type="hidden" id="editIndex">
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Nama Pegawai / Entiti</label>
+                            <input id="personName" placeholder="Contoh: Ahmad Bushra..." class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        
+                        <div class="h-px bg-slate-200 my-2"></div>
+                        
+                        <div class="bg-slate-50 rounded-xl border border-slate-200 p-4 flex flex-col gap-3">
+                            <h4 class="text-xs font-bold text-slate-700 uppercase">Tambah Portfolio</h4>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Jawatan / Peranan</label>
+                                <input id="roleInput" placeholder="Contoh: Penyelaras" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">JK / Program</label>
+                                <textarea id="programInput" placeholder="Contoh: Pentaksiran Bilik Darjah" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"></textarea>
+                            </div>
+                            <button onclick="addPortfolioToForm()" class="w-full bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors flex justify-center items-center gap-2 mt-1">
+                                <i class="ph ph-plus"></i> Masukkan ke senarai
+                            </button>
+                        </div>
+                        
+                        <div id="formPortfolioList" class="text-sm bg-white border border-slate-200 rounded-xl p-3 min-h-[80px] max-h-48 overflow-y-auto custom-scroll text-slate-500">
+                            Belum ada portfolio ditambah.
+                        </div>
+
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="savePerson()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl transition-colors shadow-sm">
+                                Simpan Data
+                            </button>
+                            <button onclick="clearForm()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors">
+                                <i class="ph ph-arrow-counter-clockwise"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Display Mode -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm">Paparan</h3>
+                        <p class="text-xs text-slate-500 mt-1">Ubah antara Kad & Jadual</p>
+                    </div>
+                    <button onclick="toggleTable()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-2.5 rounded-xl transition-colors" title="Tukar Paparan">
+                        <i id="viewIcon" class="ph ph-table text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Data Management -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-4 text-sm">
+                        <i class="ph ph-database text-blue-600 text-lg"></i> Pengurusan Data
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="exportCSV()" class="flex justify-center items-center gap-2 text-xs font-medium border border-slate-300 hover:bg-slate-50 py-2 rounded-lg transition-colors">
+                            <i class="ph ph-file-csv text-base"></i> Eksport CSV
+                        </button>
+                        <button onclick="exportJSON()" class="flex justify-center items-center gap-2 text-xs font-medium border border-slate-300 hover:bg-slate-50 py-2 rounded-lg transition-colors">
+                            <i class="ph ph-file-code text-base"></i> Eksport JSON
+                        </button>
+                        <button onclick="importJSONTrigger()" class="flex justify-center items-center gap-2 text-xs font-medium bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 py-2 rounded-lg transition-colors">
+                            <i class="ph ph-upload-simple text-base"></i> Import JSON
+                        </button>
+                        <button onclick="resetDataConfirm()" class="flex justify-center items-center gap-2 text-xs font-medium bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 py-2 rounded-lg transition-colors">
+                            <i class="ph ph-warning-circle text-base"></i> Reset Asal
+                        </button>
+                        <input type="file" id="jsonFile" accept=".json" class="hidden" onchange="importJSON(event)">
+                    </div>
+                </div>
+
+            </aside>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 mt-10 py-6 text-center">
+        <p class="text-slate-500 text-sm max-w-2xl mx-auto px-4">
+            Sumber Maklumat: Jawatankuasa Peringkat Sektor Tahun 2026 (Semakan Ketiga), Sektor Pembelajaran JPN Pahang.
+        </p>
+    </footer>
+
+    <!-- Custom Modals -->
+    <!-- Alert Modal -->
+    <div id="modal-alert" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 transform scale-95 transition-transform duration-300" id="modal-alert-box">
+            <div class="flex items-center gap-3 text-red-600 mb-3">
+                <i class="ph-fill ph-warning-circle text-2xl"></i>
+                <h3 class="text-lg font-bold">Perhatian</h3>
+            </div>
+            <p id="alert-msg" class="text-slate-600 text-sm mb-6"></p>
+            <div class="flex justify-end">
+                <button onclick="closeAlert()" class="bg-slate-800 hover:bg-slate-700 text-white py-2 px-5 rounded-lg text-sm font-medium transition-colors">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="modal-confirm" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 transform scale-95 transition-transform duration-300" id="modal-confirm-box">
+            <div class="flex items-center gap-3 text-blue-600 mb-3">
+                <i class="ph-fill ph-question text-2xl"></i>
+                <h3 class="text-lg font-bold">Pengesahan</h3>
+            </div>
+            <p id="confirm-msg" class="text-slate-600 text-sm mb-6"></p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeConfirm()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-5 rounded-lg text-sm font-medium transition-colors">Batal</button>
+                <button onclick="executeConfirm()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-5 rounded-lg text-sm font-medium transition-colors">Pasti</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add Modal -->
+    <div id="modal-quickadd" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 transform scale-95 transition-transform duration-300" id="modal-quickadd-box">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-bold flex items-center gap-2 text-teal-700">
+                    <i class="ph ph-plus-circle text-xl"></i> Tambah Pantas Portfolio
+                </h3>
+                <button onclick="closeQuickAdd()" class="text-slate-400 hover:text-slate-600"><i class="ph ph-x text-lg"></i></button>
+            </div>
+            <input type="hidden" id="qa-idx">
+            <div class="flex flex-col gap-4 mb-6">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Jawatan / Peranan</label>
+                    <input id="qa-peranan" placeholder="Cth: Penyelaras" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">JK / Program</label>
+                    <textarea id="qa-program" placeholder="Cth: Pentaksiran Bilik Darjah" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeQuickAdd()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-5 rounded-lg text-sm font-medium transition-colors">Batal</button>
+                <button onclick="submitQuickAdd()" class="bg-teal-600 hover:bg-teal-700 text-white py-2 px-5 rounded-lg text-sm font-medium transition-colors">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Name List Modal -->
+    <div id="modal-namelist" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-0 transform scale-95 transition-transform duration-300 flex flex-col max-h-[80vh]" id="modal-namelist-box">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold flex items-center gap-2 text-indigo-700">
+                    <i class="ph ph-list-dashes text-xl"></i> Senarai Nama Pegawai
+                </h3>
+                <button onclick="closeNameList()" class="text-slate-400 hover:text-slate-600"><i class="ph ph-x text-lg"></i></button>
+            </div>
+            <div id="namelist-container" class="overflow-y-auto custom-scroll p-2 flex-grow">
+                <!-- Names will be injected here -->
+            </div>
+            <div class="p-4 border-t border-slate-100 bg-slate-50 rounded-b-2xl flex justify-end">
+                <button onclick="closeNameList()" class="bg-slate-800 hover:bg-slate-700 text-white py-2 px-5 rounded-lg text-sm font-medium transition-colors">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="modal-auth" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 transform scale-95 transition-transform duration-300" id="modal-auth-box">
+            <div class="flex items-center gap-3 text-slate-800 mb-3">
+                <i class="ph-fill ph-lock-key text-2xl text-blue-600"></i>
+                <h3 class="text-lg font-bold">Pengesahan Admin</h3>
+            </div>
+            <p class="text-slate-600 text-sm mb-4">Sila masukkan kata laluan untuk mengakses fungsi kemaskini dan pengurusan data.</p>
+            <input type="password" id="auth-pwd" class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-2" placeholder="Masukkan kata laluan..." onkeypress="if(event.key==='Enter') submitAuth()">
+            <p id="auth-error" class="text-red-500 text-xs font-medium hidden mb-4">Kata laluan tidak sah.</p>
+            <div class="flex justify-end gap-3 mt-4">
+                <button onclick="closeAuth()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-5 rounded-lg text-sm font-medium transition-colors">Batal</button>
+                <button onclick="submitAuth()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-5 rounded-lg text-sm font-medium transition-colors">Sahkan</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// --- Data Asal ---
+const DEFAULT_DATA = [
+  {
+    "nama": "Cik Wan Naliza binti Wan Jaafar",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Kluster SABK – 5P Menengah Atas" },
+      { "peranan": "Pegawai Meja", "program": "TIMSS / PISA" }
+    ]
+  },
+  {
+    "nama": "Encik Farid Abdillah bin Abu Talib",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Kluster FELDA LMS – 5P Menengah Atas" },
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Pentaksiran Berasaskan Sekolah – Pentaksiran SEGAK & BMI" },
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa MOEIS – Pentaksiran SEGAK & BMI" },
+      { "peranan": "Pegawai Meja", "program": "KSSM / DK2027 SM" },
+      { "peranan": "Pegawai Meja", "program": "Standard Kecergasan Fizikal Kebangsaan & BMI (SEGAK)" },
+      { "peranan": "Penyelaras Bersama", "program": "Saya dan Muzium" },
+      { "peranan": "Penyelaras", "program": "PERHALUS – Perancangan Harus Lulus (Sejarah)" },
+      { "peranan": "Setiausaha", "program": "Mesyuarat Pengurusan Sektor Pembelajaran" }
+    ]
+  },
+  {
+    "nama": "Encik Freezaillah bin Padzil",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Kluster G30 – 5P Menengah Atas" },
+      { "peranan": "Penyelaras", "program": "Matriks Pembelajaran Tahun 4" },
+      { "peranan": "Pegawai Meja", "program": "Professional Learning Community (PLC)" },
+      { "peranan": "Pegawai Meja", "program": "Instrumen Standard Penilaian Pembudayaan Kemahiran Berfikir Aras Tinggi (ISPPK)" }
+    ]
+  },
+  {
+    "nama": "Encik Khairul Anuar bin Amir Nurdin",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Kluster G30 – 5P Menengah Atas" },
+      { "peranan": "Pegawai Meja", "program": "Pentaksiran Alternatif Sekolah Rendah (PASR)" },
+      { "peranan": "Pegawai Meja", "program": "Southeast Asia Primary Learning Metrics (SEA-PLM)" }
+    ]
+  },
+  {
+    "nama": "Encik Mat Ganti bin Mansor",
+    "portfolio": [
+      { "peranan": "Penyelaras", "program": "Program Pengupayaan Pemimpin Pendidikan Pahang (5P) – Sekolah Rendah (3M)" },
+      { "peranan": "Penolong Setiausaha", "program": "Mesyuarat Kurikulum dan Pentaksiran Negeri" },
+      { "peranan": "Setiausaha", "program": "Semua Jenis Maklum Balas" },
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa MOEIS – Pemulihan" },
+      { "peranan": "Pegawai Meja", "program": "Pemulihan Khas" },
+      { "peranan": "Penyelaras", "program": "Program Intervensi Tahun 1 (PIT1)" },
+      { "peranan": "Penyelaras", "program": "JUJ – Jawab Untuk Jaya" },
+      { "peranan": "Penyelaras", "program": "Inisiatif Makmur Pahang (IMP)" },
+      { "peranan": "Initiative Owner", "program": "TPP Sektor (#6)" }
+    ]
+  },
+  {
+    "nama": "Encik Mohammad Dzulkhairy bin Abdul Rahman",
+    "portfolio": [
+      { "peranan": "Penyelaras", "program": "Kluster SABK – 5P Menengah Atas" },
+      { "peranan": "Timbalan Pengerusi", "program": "Jawatankuasa Penawaran dan Penutupan Mata Pelajaran Elektif" },
+      { "peranan": "Penyelaras", "program": "Guru Cemerlang" },
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Think Tank STEM di bawah Sains, Teknologi dan Inovasi Kerajaan Negeri Pahang" },
+      { "peranan": "Timbalan Pengerusi", "program": "Jawatankuasa Kewangan" }
+    ]
+  },
+  {
+    "nama": "Encik Mohammed Khairul Anwar bin Mukhtar",
+    "portfolio": [
+      { "peranan": "Pegawai Meja", "program": "Program Vokasional Menengah Atas (PVMA)" }
+    ]
+  },
+  {
+    "nama": "Encik Mohd Shahril bin Ghazali",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa MOEIS – Modul Institusi" },
+      { "peranan": "Pegawai Meja", "program": "Pentaksiran Alternatif Sekolah Menengah (PASM)" },
+      { "peranan": "Pegawai Meja", "program": "Ujian Amali Sains (UAS)" },
+      { "peranan": "Penyelaras", "program": "Eco School (Latihan Guru)" }
+    ]
+  },
+  {
+    "nama": "Encik Mohd Sham Salleh bin Mohd Rashidi",
+    "portfolio": [
+      { "peranan": "Setiausaha", "program": "Jawatankuasa Perancangan Strategik RPM 2026-2035" },
+      { "peranan": "Pegawai Meja", "program": "KSSR / DK2027 SR" },
+      { "peranan": "Ahli", "program": "Takwim Sektor" },
+      { "peranan": "Penyelaras", "program": "Kajian Tindakan" },
+      { "peranan": "Initiative Owner", "program": "TPP Sektor (#5)" },
+      { "peranan": "Penyelaras", "program": "Kualiti Sektor / KPI Sektor & ABM Sektor" },
+      { "peranan": "Penyelaras", "program": "LADAP Sektor Pembelajaran" }
+    ]
+  },
+  {
+    "nama": "Encik Mohd Zaini bin Mohd Zin",
+    "portfolio": [
+      { "peranan": "Setiausaha", "program": "Jawatankuasa Data & Analisis Peperiksaan" },
+      { "peranan": "Setiausaha 2", "program": "Jawatankuasa Pentaksiran Berasaskan Sekolah" },
+      { "peranan": "Setiausaha", "program": "Jawatankuasa MOEIS" },
+      { "peranan": "Setiausaha", "program": "Bengkel Kerja Sektor Pembelajaran bersama-sama Timbalan PPD (Pembelajaran)" },
+      { "peranan": "Penyelaras", "program": "Program Tuisyen Tok Wan" },
+      { "peranan": "Penyelaras", "program": "Pengurusan Aduan Awam" }
+    ]
+  },
+  {
+    "nama": "Encik Yugendren A/L Perumal",
+    "portfolio": [
+      { "peranan": "Ahli", "program": "Takwim Sektor" },
+      { "peranan": "Pegawai Meja", "program": "Sekolah Kurang Murid dan Kelas Bercantum (SKM)" }
+    ]
+  },
+  {
+    "nama": "Encik Yusof bin Kassim",
+    "portfolio": [
+      { "peranan": "Pengerusi", "program": "Jawatankuasa Perancangan Strategik RPM 2026-2035" },
+      { "peranan": "Pengerusi", "program": "Jawatankuasa Data & Analisis Peperiksaan" },
+      { "peranan": "Pengerusi", "program": "Jawatankuasa Pentaksiran Berasaskan Sekolah" },
+      { "peranan": "Pengerusi", "program": "Jawatankuasa MOEIS" },
+      { "peranan": "Pengerusi", "program": "Jawatankuasa Penawaran dan Penutupan Mata Pelajaran Elektif" },
+      { "peranan": "Pengerusi", "program": "Jawatankuasa Pengurusan Mesyuarat" },
+      { "peranan": "Pengerusi", "program": "Jawatankuasa Kewangan" }
+    ]
+  },
+  {
+    "nama": "Pemegang Waran Peruntukan / Waran Khas",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Kewangan" }
+    ]
+  },
+  {
+    "nama": "PP Sektor Infrastruktur & Perolehan",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Penawaran dan Penutupan Mata Pelajaran Elektif" }
+    ]
+  },
+  {
+    "nama": "PP Sektor Pembangunan Murid",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Penawaran dan Penutupan Mata Pelajaran Elektif" }
+    ]
+  },
+  {
+    "nama": "PP Sektor Pendidikan Islam",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Penawaran dan Penutupan Mata Pelajaran Elektif" }
+    ]
+  },
+  {
+    "nama": "PP Sektor Penilaian & Peperiksaan",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Penawaran dan Penutupan Mata Pelajaran Elektif" }
+    ]
+  },
+  {
+    "nama": "PP Unit Menengah Sektor Pengurusan Sekolah",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Penawaran dan Penutupan Mata Pelajaran Elektif" }
+    ]
+  },
+  {
+    "nama": "Puan Arbiknah binti Hussain",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Kluster FELDA GP – 5P Menengah Atas" },
+      { "peranan": "Penolong Setiausaha", "program": "Mesyuarat Pengurusan Sektor Pembelajaran" },
+      { "peranan": "Pegawai Meja", "program": "Program Pembentukan Karakter" },
+      { "peranan": "Pegawai Meja", "program": "Sekolah Murid Orang Asli (SMOA)" }
+    ]
+  },
+  {
+    "nama": "Puan Hajah Noor Siah binti Md Top",
+    "portfolio": [
+      { "peranan": "Penyelaras", "program": "Kluster G30 – 5P Menengah Atas" },
+      { "peranan": "Timbalan Pengerusi", "program": "Mesyuarat Kurikulum dan Pentaksiran Negeri" },
+      { "peranan": "Penyelaras", "program": "Takwim Sektor" },
+      { "peranan": "Timbalan Pengerusi", "program": "Semua Jenis Maklum Balas" },
+      { "peranan": "Pegawai Meja", "program": "Pentaksiran Alternatif Sekolah Menengah (PASM)" },
+      { "peranan": "Pegawai Meja", "program": "Pentaksiran Alternatif Sekolah Rendah (PASR)" },
+      { "peranan": "Pegawai Meja", "program": "Dual Language Programme (DLP)" }
+    ]
+  },
+  {
+    "nama": "Puan Hazlina binti Mohamad Sood",
+    "portfolio": [
+      { "peranan": "Penyelaras", "program": "Kluster FELDA GP dan FELDA LMS – 5P Menengah Atas" },
+      { "peranan": "Penyelaras", "program": "WAR – Kunjung Bantu Pengoperasian Kurikulum Sekolah" },
+      { "peranan": "Timbalan Pengerusi", "program": "Mesyuarat Pengurusan Sektor Pembelajaran" },
+      { "peranan": "Initiative Owner", "program": "TPP Sektor (#9)" },
+      { "peranan": "Penyelaras", "program": "EKSA – Ekosistem Kondusif Sektor Awam" }
+    ]
+  },
+  {
+    "nama": "Puan Jalilah binti Salim",
+    "portfolio": [
+      { "peranan": "Penyelaras", "program": "Kluster LMS – 5P Menengah Atas" },
+      { "peranan": "Penyelaras", "program": "IMPresS – Inisiatif Melonjakkan Prestasi Sekolah (Sifar Peralihan)" },
+      { "peranan": "Pegawai Meja", "program": "CEFR-Aligned Curriculum, HIP, ProELT, PPKBIS" },
+      { "peranan": "Pegawai Meja", "program": "Remedial Instruction (PLaN)" },
+      { "peranan": "Initiative Owner", "program": "TPP Sektor (#2)" }
+    ]
+  },
+  {
+    "nama": "Puan Masrinawati binti Mohd Arifin",
+    "portfolio": [
+      { "peranan": "Penyelaras", "program": "Pemerkasaan PdP berasaskan kemahiran berfikir secara kritis dan kreatif" },
+      { "peranan": "Setiausaha 1", "program": "Jawatankuasa Pentaksiran Berasaskan Sekolah" },
+      { "peranan": "Setiausaha", "program": "Mesyuarat Kurikulum dan Pentaksiran Negeri" },
+      { "peranan": "Pegawai Meja", "program": "Professional Learning Community (PLC)" },
+      { "peranan": "Petugas", "program": "DTP SISC+" },
+      { "peranan": "Initiative Owner", "program": "TPP Sektor (#3)" }
+    ]
+  },
+  {
+    "nama": "Puan Nurul Anis binti Abdul Halim",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Data – 5P Menengah Atas" },
+      { "peranan": "Penyelaras", "program": "Peperiksaan Dalaman Sekolah" },
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa MOEIS – Peperiksaan Dalaman Sekolah" },
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa MOEIS – Pentaksiran Prasekolah" },
+      { "peranan": "Pegawai Meja", "program": "Pendidikan Keselamatan Jalan Raya (PKJR) – Prasekolah" },
+      { "peranan": "Penyelaras", "program": "Program Anak Kita" }
+    ]
+  },
+  {
+    "nama": "Puan Nurulsyuhada binti Mohamad Razali",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Kluster SABK – 5P Menengah Atas" },
+      { "peranan": "Penyelaras", "program": "Peperiksaan Awam (STPM)" },
+      { "peranan": "Setiausaha", "program": "Jawatankuasa Penawaran dan Penutupan Mata Pelajaran Elektif" }
+    ]
+  },
+  {
+    "nama": "Puan Siti Hazar binti Hussin",
+    "portfolio": [
+      { "peranan": "Penolong Setiausaha", "program": "Jawatankuasa Kewangan" }
+    ]
+  },
+  {
+    "nama": "Puan Teh Azhua binti Mohamed Isa",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Kluster G11 – 5P Menengah Atas" },
+      { "peranan": "Pegawai Meja", "program": "TIMSS / PISA" }
+    ]
+  },
+  {
+    "nama": "Puan Wee Ting Nee",
+    "portfolio": [
+      { "peranan": "Penolong Setiausaha", "program": "Semua Jenis Maklum Balas" },
+      { "peranan": "Pegawai Meja", "program": "Bahasa Antarabangsa" },
+      { "peranan": "Pegawai Meja", "program": "PiTO TESL" }
+    ]
+  },
+  {
+    "nama": "Puan Zalina binti Abd Latif",
+    "portfolio": [
+      { "peranan": "Setiausaha", "program": "Jawatankuasa Kewangan" }
+    ]
+  },
+  {
+    "nama": "Puan Zalina binti Zulkifly",
+    "portfolio": [
+      { "peranan": "Penyelaras", "program": "Kluster G11 – 5P Menengah Atas" },
+      { "peranan": "Pegawai Meja", "program": "Pengukuhan Pendidikan STEM" },
+      { "peranan": "Penyelaras", "program": "Program Tuisyen Madani Yayasan Al-Bukhary" },
+      { "peranan": "Penyelaras", "program": "Program Tour School Skor A+ SPM Pahang Yayasan Al-Sultan Abdullah (YASA)" },
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Think Tank STEM di bawah Sains, Teknologi dan Inovasi Kerajaan Negeri Pahang" }
+    ]
+  },
+  {
+    "nama": "Semua Pemegang Inisiatif",
+    "portfolio": [
+      { "peranan": "Penyelaras / Pemegang Inisiatif", "program": "TPP Sektor (Transformasi Pendidikan Pahang)" }
+    ]
+  },
+  {
+    "nama": "Semua Unit Sektor Pembelajaran",
+    "portfolio": [
+      { "peranan": "Unit / AJK", "program": "Kunjung Bantu ML/guru mata pelajaran secara berfokus" },
+      { "peranan": "Unit / AJK", "program": "Bengkel Peningkatan Kompetensi ML/JU/Duta Guru/guru mata pelajaran secara berfokus" },
+      { "peranan": "Unit / AJK", "program": "Program bersama IPT/IPTS, Kerajaan Negeri, Swasta dan Industri" },
+      { "peranan": "Unit / AJK", "program": "Pemerkasaan PdP berasaskan kemahiran berfikir secara kritis dan kreatif" },
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Penawaran dan Penutupan Mata Pelajaran Elektif" }
+    ]
+  },
+  {
+    "nama": "Tuan Haji Ahmad Bushra bin Abdul Rahman",
+    "portfolio": [
+      { "peranan": "Penyelaras", "program": "Program Pengupayaan Pemimpin Pendidikan Pahang (5P) – Sekolah Rendah (PBD)" },
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Pentaksiran Berasaskan Sekolah – Pentaksiran Bilik Darjah" },
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa MOEIS – Pentaksiran Bilik Darjah" },
+      { "peranan": "Pegawai Meja", "program": "Inovasi / Anugerah" },
+      { "peranan": "Penyelaras", "program": "Duta Guru" }
+    ]
+  },
+  {
+    "nama": "Tuan Haji Mior Ridzuan bin Riza",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Data – 5P Menengah Atas" },
+      { "peranan": "Penyelaras", "program": "Peperiksaan Awam (SPM)" },
+      { "peranan": "Penolong Setiausaha", "program": "Bengkel Kerja Sektor Pembelajaran bersama-sama Timbalan PPD (Pembelajaran)" },
+      { "peranan": "Pegawai Meja", "program": "Kelas Hibrid / Kelas Pintar / AI Powered Classroom" }
+    ]
+  },
+  {
+    "nama": "Tuan Haji Mohd Suhaidi bin Mohd Nordin",
+    "portfolio": [
+      { "peranan": "Naib Pengerusi", "program": "Jawatankuasa Perancangan Strategik RPM 2026-2035" },
+      { "peranan": "Timbalan Pengerusi", "program": "Jawatankuasa Data & Analisis Peperiksaan" },
+      { "peranan": "Timbalan Pengerusi", "program": "Jawatankuasa Pentaksiran Berasaskan Sekolah" },
+      { "peranan": "Timbalan Pengerusi", "program": "Jawatankuasa MOEIS" },
+      { "peranan": "Penyelaras", "program": "Program Pemerkasaan Profesionalisme Pegawai Pendidikan Pahang (viP) - Dialog Konsolidasi" },
+      { "peranan": "Timbalan Pengerusi", "program": "Bengkel Kerja Sektor Pembelajaran bersama-sama Timbalan PPD (Pembelajaran)" },
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Think Tank STEM di bawah Sains, Teknologi dan Inovasi Kerajaan Negeri Pahang" },
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa STEM Kerajaan Negeri Pahang" },
+      { "peranan": "Penyelaras", "program": "Kualiti Sektor / KPI Sektor & ABM Sektor" }
+    ]
+  },
+  {
+    "nama": "Tuan Haji Shamdzul bin Ahmad",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Kluster LMS – 5P Menengah Atas" },
+      { "peranan": "Pegawai Meja", "program": "Pendidikan Keselamatan Jalan Raya (PKJR)" },
+      { "peranan": "Pegawai Meja", "program": "Ujian Penilaian Bahasa Melayu Guru (UPBMG)" },
+      { "peranan": "Pegawai Meja", "program": "Pemartabatan Pendidikan Bahasa Melayu" },
+      { "peranan": "Pegawai Meja", "program": "Program Literasi dan Numerasi (PLaN)" },
+      { "peranan": "Penyelaras", "program": "Saya dan Muzium" },
+      { "peranan": "Penyelaras", "program": "PERHALUS – Perancangan Harus Lulus (Bahasa Melayu)" },
+      { "peranan": "Penyelaras", "program": "BCK – Baca Cepat KawanKu" },
+      { "peranan": "Penyelaras Bersama", "program": "JUJ – Jawab Untuk Jaya" }
+    ]
+  },
+  {
+    "nama": "Wakil Unit Kewangan",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Penawaran dan Penutupan Mata Pelajaran Elektif" }
+    ]
+  },
+  {
+    "nama": "Wakil Unit Pembangunan",
+    "portfolio": [
+      { "peranan": "Ahli Jawatankuasa", "program": "Jawatankuasa Penawaran dan Penutupan Mata Pelajaran Elektif" }
+    ]
+  }
+];
+
+// --- State Variables ---
+let data = JSON.parse(localStorage.getItem('jk_sp_2026_data') || JSON.stringify(DEFAULT_DATA));
+let tempPortfolio = [];
+let tableMode = false;
+let currentView = 'pegawai';
+let currentCatFilter = '';
+
+// --- Auth Variables ---
+let authCallback = null;
+let isAuthorized = sessionStorage.getItem('sp_jk_auth') === 'true';
+
+// Set initial lock icon state if already logged in
+window.onload = () => {
+    if (isAuthorized) {
+        document.getElementById('lock-icon').className = 'ph-fill ph-unlock text-emerald-500';
+    }
+}
+
+// --- Custom Modal Logic ---
+function showModal(id) {
+    const el = document.getElementById(id);
+    const box = document.getElementById(id + '-box');
+    el.classList.remove('hidden');
+    el.classList.add('flex');
+    setTimeout(() => {
+        el.classList.remove('opacity-0');
+        box.classList.remove('scale-95');
+    }, 10);
+}
+
+function hideModal(id) {
+    const el = document.getElementById(id);
+    const box = document.getElementById(id + '-box');
+    el.classList.add('opacity-0');
+    box.classList.add('scale-95');
+    setTimeout(() => {
+        el.classList.add('hidden');
+        el.classList.remove('flex');
+    }, 300);
+}
+
+// Custom Alert
+function customAlert(msg) {
+    document.getElementById('alert-msg').textContent = msg;
+    showModal('modal-alert');
+}
+function closeAlert() { hideModal('modal-alert'); }
+
+// Custom Confirm
+let confirmCallback = null;
+function customConfirm(msg, callback) {
+    document.getElementById('confirm-msg').textContent = msg;
+    confirmCallback = callback;
+    showModal('modal-confirm');
+}
+function closeConfirm() { hideModal('modal-confirm'); confirmCallback = null; }
+function executeConfirm() {
+    if (confirmCallback) confirmCallback();
+    closeConfirm();
+}
+
+// Custom Quick Add Prompt
+function showQuickAddModal(idx) {
+    requireAuth(() => {
+        document.getElementById('qa-idx').value = idx;
+        document.getElementById('qa-peranan').value = '';
+        document.getElementById('qa-program').value = '';
+        showModal('modal-quickadd');
+        setTimeout(() => document.getElementById('qa-peranan').focus(), 100);
+    });
+}
+function closeQuickAdd() { hideModal('modal-quickadd'); }
+function submitQuickAdd() {
+    const idx = document.getElementById('qa-idx').value;
+    const peranan = document.getElementById('qa-peranan').value.trim();
+    const program = document.getElementById('qa-program').value.trim();
+    if (!peranan || !program) {
+        customAlert('Sila isi kedua-dua medan jawatan dan program.');
+        return;
+    }
+    data[idx].portfolio.push({peranan, program});
+    saveLocal();
+    render();
+    closeQuickAdd();
+}
+
+// Custom Auth Modal
+function requireAuth(callback) {
+    if (isAuthorized) {
+        callback();
+    } else {
+        authCallback = callback;
+        document.getElementById('auth-pwd').value = '';
+        document.getElementById('auth-error').classList.add('hidden');
+        showModal('modal-auth');
+        setTimeout(() => document.getElementById('auth-pwd').focus(), 100);
+    }
+}
+
+function submitAuth() {
+    const pwd = document.getElementById('auth-pwd').value;
+    if (pwd === '1234') { // KATA LALUAN
+        isAuthorized = true;
+        sessionStorage.setItem('sp_jk_auth', 'true');
+        hideModal('modal-auth');
+        document.getElementById('lock-icon').className = 'ph-fill ph-unlock text-emerald-500';
+        if (authCallback) {
+            authCallback();
+            authCallback = null;
+        }
+    } else {
+        document.getElementById('auth-error').classList.remove('hidden');
+    }
+}
+function closeAuth() {
+    hideModal('modal-auth');
+    authCallback = null;
+    // If user cancels auth while trying to switch to admin tab, reset view to pegawai
+    if (currentView !== 'admin') {
+        switchView('pegawai');
+    }
+}
+
+// Custom Name List Modal
+function showNameListModal() {
+    const names = [...new Set(data.map(p => p.nama))].sort((a, b) => a.localeCompare(b));
+    const container = document.getElementById('namelist-container');
+    
+    if (names.length === 0) {
+        container.innerHTML = '<div class="p-5 text-center text-slate-500">Tiada rekod pegawai.</div>';
+    } else {
+        container.innerHTML = names.map(n => `
+            <button onclick="filterByName('${escapeHTML(n).replace(/'/g, "\\'")}')" class="w-full text-left px-4 py-3 border-b border-slate-50 hover:bg-indigo-50 transition-colors flex justify-between items-center group rounded-lg mb-1">
+                <span class="text-sm font-medium text-slate-700 group-hover:text-indigo-700">${escapeHTML(n)}</span>
+                <i class="ph ph-magnifying-glass text-slate-300 group-hover:text-indigo-500"></i>
+            </button>
+        `).join('');
+    }
+    showModal('modal-namelist');
+}
+function closeNameList() { hideModal('modal-namelist'); }
+function filterByName(name) {
+    document.getElementById('search').value = name;
+    
+    // Switch to Pegawai view automatically when searching by name (if not in admin view)
+    if (currentView === 'program') {
+        switchView('pegawai');
+    } else {
+        render();
+    }
+    closeNameList();
+}
+
+
+// --- App Logic ---
+function saveLocal() {
+    localStorage.setItem('jk_sp_2026_data', JSON.stringify(data));
+}
+
+function escapeHTML(str) {
+    return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function normalize(s) { return (s || '').toLowerCase(); }
+
+function getFilteredData() {
+    const q = normalize(document.getElementById('search').value);
+    const role = document.getElementById('roleFilter').value;
+    let items = data.map((p, idx) => ({...p, _idx: idx})).filter(p => {
+        const text = normalize(p.nama + ' ' + p.portfolio.map(x => x.peranan + ' ' + x.program).join(' '));
+        const matchQ = !q || text.includes(q);
+        const matchRole = !role || p.portfolio.some(x => x.peranan === role);
+        return matchQ && matchRole;
+    });
+    const sortBy = document.getElementById('sortBy').value;
+    if (sortBy === 'name') items.sort((a,b)=>a.nama.localeCompare(b.nama));
+    if (sortBy === 'countDesc') items.sort((a,b)=>b.portfolio.length-a.portfolio.length || a.nama.localeCompare(b.nama));
+    if (sortBy === 'countAsc') items.sort((a,b)=>a.portfolio.length-b.portfolio.length || a.nama.localeCompare(b.nama));
+    return items;
+}
+
+function renderRoleFilter() {
+    const sel = document.getElementById('roleFilter');
+    const current = sel.value;
+    const roles = [...new Set(data.flatMap(p => p.portfolio.map(x => x.peranan)))].sort();
+    sel.innerHTML = '<option value="">Semua peranan</option>' + roles.map(r => `<option value="${escapeHTML(r)}">${escapeHTML(r)}</option>`).join('');
+    sel.value = current;
+}
+
+function renderStats(itemsCount) {
+    const totalPort = data.reduce((a,b)=>a+b.portfolio.length,0);
+    const top = data.length ? Math.max(...data.map(x=>x.portfolio.length)) : 0;
+    
+    document.getElementById('totalPeople').textContent = data.length;
+    document.getElementById('totalPortfolios').textContent = totalPort;
+    
+    // Dynamically change labels based on current view
+    if (currentView === 'program') {
+        document.getElementById('shownPeople').textContent = itemsCount;
+        document.getElementById('shownPeople').nextElementSibling.textContent = "PROGRAM DIPAPAR";
+        document.getElementById('topCount').textContent = "-";
+        document.getElementById('topCount').nextElementSibling.textContent = "N/A";
+    } else {
+        // For both Pegawai and Admin views
+        document.getElementById('shownPeople').textContent = itemsCount;
+        document.getElementById('shownPeople').nextElementSibling.textContent = "PEGAWAI DIPAPAR";
+        document.getElementById('topCount').textContent = top;
+        document.getElementById('topCount').nextElementSibling.textContent = "PORTFOLIO TERTINGGI";
+    }
+}
+
+function switchView(view) {
+    // Check Authorization before switching to Admin view
+    if (view === 'admin' && !isAuthorized) {
+        requireAuth(() => { switchView('admin'); });
+        return; // Hentikan fungsi di sini dan tunggu auth berjaya
+    }
+
+    currentView = view;
+    
+    // 1. Tetapkan semula butang tab
+    ['pegawai', 'program', 'admin'].forEach(v => {
+        const el = document.getElementById('tab-' + v);
+        el.className = "px-5 py-3 border-b-2 font-bold text-sm transition-colors border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 whitespace-nowrap" + (v === 'admin' ? " ml-auto" : "");
+    });
+    
+    // Aktifkan butang tab semasa
+    const activeTab = document.getElementById('tab-' + view);
+    if (view === 'admin') {
+        activeTab.className = "px-5 py-3 border-b-2 font-bold text-sm transition-colors border-teal-600 text-teal-700 flex items-center gap-2 whitespace-nowrap ml-auto bg-teal-50/50 rounded-t-lg";
+    } else {
+        activeTab.className = "px-5 py-3 border-b-2 font-bold text-sm transition-colors border-blue-600 text-blue-600 flex items-center gap-2 whitespace-nowrap";
+    }
+
+    // 2. Ubah susun atur (Layout) Grid dan elemen Sisi
+    const mainCol = document.getElementById('main-content-col');
+    const sidebar = document.getElementById('admin-sidebar');
+    
+    // Sembunyikan semua kawalan terlebih dahulu
+    document.getElementById('pegawai-filter-control').classList.add('hidden');
+    document.getElementById('pegawai-sort-control').classList.add('hidden');
+    document.getElementById('program-quick-filters').classList.add('hidden');
+
+    if (view === 'pegawai') {
+        document.getElementById('pegawai-filter-control').classList.remove('hidden');
+        document.getElementById('pegawai-sort-control').classList.remove('hidden');
+        mainCol.className = 'lg:col-span-3 transition-all duration-300'; // Paparan penuh (View Only)
+        sidebar.classList.add('hidden');
+    } else if (view === 'program') {
+        document.getElementById('program-quick-filters').classList.remove('hidden');
+        mainCol.className = 'lg:col-span-3 transition-all duration-300'; // Paparan penuh (View Only)
+        sidebar.classList.add('hidden');
+    } else if (view === 'admin') {
+        document.getElementById('pegawai-filter-control').classList.remove('hidden');
+        document.getElementById('pegawai-sort-control').classList.remove('hidden');
+        mainCol.className = 'lg:col-span-2 transition-all duration-300'; // Paparan terbahagi dua untuk form
+        sidebar.classList.remove('hidden');
+        sidebar.classList.add('flex');
+    }
+    
+    render();
+}
+
+function setCatFilter(cat) {
+    currentCatFilter = cat;
+    
+    // 1. Reset all buttons to default unselected state
+    document.getElementById('btn-cat-all').className = "cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100";
+    document.getElementById('btn-cat-Utama').className = "cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100";
+    document.getElementById('btn-cat-8.1').className = "cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100";
+    document.getElementById('btn-cat-8.2').className = "cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100";
+    document.getElementById('btn-cat-8.3').className = "cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100";
+    
+    // 2. Apply styling based on active selection
+    if (cat === '') {
+        const btnAll = document.getElementById('btn-cat-all');
+        btnAll.classList.replace('bg-slate-50', 'bg-slate-800');
+        btnAll.classList.replace('text-slate-600', 'text-white');
+        btnAll.classList.replace('border-slate-200', 'border-slate-800');
+        btnAll.classList.add('shadow-sm');
+    } else if (cat === 'Utama') {
+        document.getElementById('btn-cat-Utama').classList.add('ring-2', 'ring-offset-2', 'ring-indigo-400');
+    } else if (cat === '8.1') {
+        document.getElementById('btn-cat-8.1').classList.add('ring-2', 'ring-offset-2', 'ring-emerald-400');
+    } else if (cat === '8.2') {
+        document.getElementById('btn-cat-8.2').classList.add('ring-2', 'ring-offset-2', 'ring-amber-400');
+    } else if (cat === '8.3') {
+        document.getElementById('btn-cat-8.3').classList.add('ring-2', 'ring-offset-2', 'ring-purple-400');
+    }
+    
+    render();
+}
+
+function getProgramCategory(name) {
+    const n = name.toLowerCase();
+    if (n.includes('perancangan strategik rpm') || n.includes('kluster') || n.includes('5p') || n.includes('impress') || n.includes('kunjung bantu') || n.includes('dialog konsolidasi') || n.includes('bengkel peningkatan kompetensi') || n.includes('ipt/ipts')) return '1. Jawatankuasa Perancangan Strategik RPM 2026-2035';
+    if (n.includes('data & analisis peperiksaan') || n.includes('peperiksaan awam') || n.includes('peperiksaan dalaman') || n.includes('matriks pembelajaran')) return '2. Jawatankuasa Data & Analisis Peperiksaan';
+    if (n.includes('pentaksiran berasaskan sekolah')) return '3. Jawatankuasa Pentaksiran Berasaskan Sekolah';
+    if (n.includes('moeis')) return '4. Jawatankuasa MOEIS';
+    if (n.includes('mata pelajaran elektif')) return '5. Jawatankuasa Penawaran & Penutupan MP Elektif';
+    if (n.includes('pengurusan mesyuarat') || n.includes('mesyuarat kurikulum') || n.includes('bengkel kerja sektor') || n.includes('mesyuarat pengurusan') || n.includes('takwim') || n.includes('maklum balas')) return '6. Jawatankuasa Pengurusan Mesyuarat';
+    if (n.includes('kewangan')) return '7. Jawatankuasa Kewangan';
+    
+    // Khusus 8.3 Tugas Khas diletakkan dahulu supaya kata kunci seperti 'Sektor' tepat
+    if (n.includes('sisc+') || n.includes('think tank') || n.includes('stem kerajaan negeri') || n.includes('kualiti sektor') || n.includes('aduan awam') || n.includes('eksa') || n.includes('ladap') || n.includes('pemerkasaan pdp')) return '8.3 Tugas Khas';
+    
+    // Khusus 8.2 Program Khas
+    if (n.includes('duta guru') || n.includes('muzium') || n.includes('perhalus') || n.includes('bck') || n.includes('guru cemerlang') || n.includes('juj') || n.includes('kajian tindakan') || n.includes('eco school') || n.includes('tpp sektor') || n.includes('tuisyen') || n.includes('anak kita') || n.includes('makmur pahang') || n.includes('tour school')) return '8.2 Program Khas';
+
+    // 8.1 Pegawai Meja (Kata kunci selebihnya)
+    if (n.includes('kssm') || n.includes('kssr') || n.includes('cefr') || n.includes('karakter') || n.includes('pemulihan') || n.includes('segak') || n.includes('bmi') || n.includes('pvma') || n.includes('pasm') || n.includes('pasr') || n.includes('amali sains') || n.includes('antarabangsa') || n.includes('pkjr') || n.includes('plc') || n.includes('upbmg') || n.includes('plan') || n.includes('pito') || n.includes('skm') || n.includes('smoa') || n.includes('timss') || n.includes('pisa') || n.includes('sea-plm') || n.includes('inovasi') || n.includes('hibrid') || n.includes('pintar') || n.includes('pit1') || n.includes('isppk') || n.includes('dlp') || n.includes('pendidikan stem') || n.includes('pemartabatan') || n.includes('literasi dan numerasi')) return '8.1 Pegawai Meja KPM';
+
+    return 'Lain-Lain (Tidak Dikategorikan)';
+}
+
+function getFilteredProgramData() {
+    const q = normalize(document.getElementById('search').value);
+    const rawCategorized = {};
+    
+    // Kumpul data mengikut kategori dan program
+    data.forEach(p => {
+        p.portfolio.forEach(port => {
+            const cat = getProgramCategory(port.program);
+            if (!rawCategorized[cat]) rawCategorized[cat] = {};
+            if (!rawCategorized[cat][port.program]) rawCategorized[cat][port.program] = [];
+            rawCategorized[cat][port.program].push({ nama: p.nama, peranan: port.peranan });
+        });
+    });
+
+    const categories = [];
+    const catOrder = [
+        '1. Jawatankuasa Perancangan Strategik RPM 2026-2035',
+        '2. Jawatankuasa Data & Analisis Peperiksaan',
+        '3. Jawatankuasa Pentaksiran Berasaskan Sekolah',
+        '4. Jawatankuasa MOEIS',
+        '5. Jawatankuasa Penawaran & Penutupan MP Elektif',
+        '6. Jawatankuasa Pengurusan Mesyuarat',
+        '7. Jawatankuasa Kewangan',
+        '8.1 Pegawai Meja KPM',
+        '8.2 Program Khas',
+        '8.3 Tugas Khas',
+        'Lain-Lain (Tidak Dikategorikan)'
+    ];
+
+    // Proses dan susun carian & tapisan butang
+    catOrder.forEach(cat => {
+        // Tapis mengikut butang akses segera
+        if (currentCatFilter === 'Utama' && !cat.match(/^[1-7]\./)) return;
+        if (currentCatFilter === '8.1' && !cat.includes('8.1')) return;
+        if (currentCatFilter === '8.2' && !cat.includes('8.2')) return;
+        if (currentCatFilter === '8.3' && !cat.includes('8.3')) return;
+
+        if (rawCategorized[cat]) {
+            const programs = [];
+            Object.keys(rawCategorized[cat]).forEach(progName => {
+                const ahliList = rawCategorized[cat][progName];
+                const text = normalize(progName + ' ' + ahliList.map(a => a.nama + ' ' + a.peranan).join(' '));
+                if (!q || text.includes(q)) {
+                    programs.push({ program: progName, ahli: ahliList });
+                }
+            });
+            
+            if (programs.length > 0) {
+                programs.sort((a,b) => a.program.localeCompare(b.program));
+                categories.push({ kategori: cat, programs: programs });
+            }
+        }
+    });
+
+    return categories;
+}
+
+function render() {
+    renderRoleFilter();
+    
+    // Paparan IKUT PROGRAM
+    if (currentView === 'program') {
+        const categorizedPrograms = getFilteredProgramData();
+        const totalProgs = categorizedPrograms.reduce((acc, cat) => acc + cat.programs.length, 0);
+        renderStats(totalProgs);
+        renderProgramView(categorizedPrograms);
+        return;
+    }
+
+    // Paparan IKUT PEGAWAI (Read Only) & ADMIN (Editable)
+    const items = getFilteredData();
+    renderStats(items.length);
+    const list = document.getElementById('list');
+    
+    if (tableMode) {
+        document.getElementById('viewIcon').className = 'ph ph-cards text-xl';
+        list.innerHTML = renderTable(items);
+        return;
+    }
+    
+    document.getElementById('viewIcon').className = 'ph ph-table text-xl';
+    
+    if(items.length === 0) {
+        list.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 p-10 text-center text-slate-500 shadow-sm print-card">
+            <i class="ph ph-magnifying-glass text-4xl mb-3 text-slate-300"></i><br>Tiada rekod ditemui.
+        </div>`;
+        return;
+    }
+
+    list.innerHTML = items.map(p => `
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 print-card hover:shadow-md transition-shadow relative">
+            <div class="flex justify-between items-start gap-4 mb-4 pb-4 border-b border-slate-100">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800 m-0 pr-10">${escapeHTML(p.nama)}</h3>
+                    <p class="text-xs text-slate-500 mt-1"><i class="ph ph-briefcase"></i> ${p.portfolio.length} portfolio didaftarkan</p>
+                </div>
+                <span class="bg-blue-50 text-blue-700 rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap border border-blue-100 flex items-center gap-1 shrink-0">
+                    ${p.portfolio.length} <span class="hidden sm:inline">Portfolio</span>
+                </span>
+            </div>
+            
+            <ul class="space-y-3 mb-3 text-sm text-slate-700">
+                ${p.portfolio.map(x => `
+                    <li class="flex items-start gap-2">
+                        <i class="ph-fill ph-check-circle text-teal-500 mt-0.5"></i>
+                        <span><span class="font-bold text-teal-700">${escapeHTML(x.peranan)}</span> &ndash; ${escapeHTML(x.program)}</span>
+                    </li>
+                `).join('')}
+            </ul>
+            
+            ${currentView === 'admin' ? `
+            <div class="flex flex-wrap gap-2 pt-4 border-t border-slate-50 no-print mt-2">
+                <button class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-1.5 px-3 rounded-lg text-xs transition-colors" onclick="editPerson(${p._idx})">
+                    <i class="ph ph-pencil-simple"></i> Edit
+                </button>
+                <button class="flex items-center gap-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 font-medium py-1.5 px-3 rounded-lg text-xs transition-colors" onclick="showQuickAddModal(${p._idx})">
+                    <i class="ph ph-plus"></i> Tambah JK
+                </button>
+                <button class="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-medium py-1.5 px-3 rounded-lg text-xs transition-colors ml-auto" onclick="deletePersonConfirm(${p._idx})">
+                    <i class="ph ph-trash"></i> Padam
+                </button>
+            </div>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+function renderTable(items) {
+    if(items.length === 0) return `<div class="bg-white rounded-2xl border border-slate-200 p-10 text-center text-slate-500 shadow-sm"><i class="ph ph-magnifying-glass text-4xl mb-3 text-slate-300"></i><br>Tiada rekod ditemui.</div>`;
+    
+    return `
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden print-card overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[600px]">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs uppercase tracking-wider">
+                    <th class="p-4 font-semibold w-1/3">Nama Pegawai</th>
+                    <th class="p-4 font-semibold w-16 text-center">Bil.</th>
+                    <th class="p-4 font-semibold">Jawatan dan Peranan</th>
+                    ${currentView === 'admin' ? `<th class="p-4 font-semibold w-24 text-center no-print">Tindakan</th>` : ''}
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-sm">
+                ${items.map(p => `
+                <tr class="hover:bg-slate-50/50 transition-colors align-top">
+                    <td class="p-4 font-bold text-slate-800">${escapeHTML(p.nama)}</td>
+                    <td class="p-4 text-center font-medium text-slate-500">
+                        <span class="bg-slate-100 px-2 py-1 rounded-md">${p.portfolio.length}</span>
+                    </td>
+                    <td class="p-4">
+                        <ul class="space-y-1.5 text-slate-700">
+                            ${p.portfolio.map(x => `
+                                <li class="flex items-start gap-1.5">
+                                    <span class="text-teal-400 mt-0.5">•</span>
+                                    <span><span class="font-semibold text-teal-700">${escapeHTML(x.peranan)}</span> &ndash; ${escapeHTML(x.program)}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </td>
+                    ${currentView === 'admin' ? `
+                    <td class="p-4 text-center no-print">
+                        <button class="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" onclick="editPerson(${p._idx})" title="Edit">
+                            <i class="ph ph-pencil-simple text-lg"></i>
+                        </button>
+                    </td>` : ''}
+                </tr>`).join('')}
+            </tbody>
+        </table>
+    </div>`;
+}
+
+// Fungsi pembantu untuk membezakan warna mengikut kategori
+function getCategoryColor(kategori) {
+    if (kategori.includes('8.1')) return {
+        headBg: 'bg-emerald-50/80', headText: 'text-emerald-800', headBorder: 'border-emerald-200', icon: 'text-emerald-500',
+        itemBorder: 'border-l-emerald-500', itemTitle: 'text-emerald-800', badgeBg: 'bg-emerald-50', badgeText: 'text-emerald-700', badgeBorder: 'border-emerald-200'
+    };
+    if (kategori.includes('8.2')) return {
+        headBg: 'bg-amber-50/80', headText: 'text-amber-800', headBorder: 'border-amber-200', icon: 'text-amber-500',
+        itemBorder: 'border-l-amber-500', itemTitle: 'text-amber-800', badgeBg: 'bg-amber-50', badgeText: 'text-amber-700', badgeBorder: 'border-amber-200'
+    };
+    if (kategori.includes('8.3')) return {
+        headBg: 'bg-purple-50/80', headText: 'text-purple-800', headBorder: 'border-purple-200', icon: 'text-purple-500',
+        itemBorder: 'border-l-purple-500', itemTitle: 'text-purple-800', badgeBg: 'bg-purple-50', badgeText: 'text-purple-700', badgeBorder: 'border-purple-200'
+    };
+    if (kategori.includes('Lain-Lain')) return {
+        headBg: 'bg-slate-100/80', headText: 'text-slate-700', headBorder: 'border-slate-200', icon: 'text-slate-400',
+        itemBorder: 'border-l-slate-400', itemTitle: 'text-slate-700', badgeBg: 'bg-slate-100', badgeText: 'text-slate-600', badgeBorder: 'border-slate-200'
+    };
+    // Default Jawatankuasa Utama (1 - 7)
+    return {
+        headBg: 'bg-indigo-50/80', headText: 'text-indigo-800', headBorder: 'border-indigo-200', icon: 'text-indigo-500',
+        itemBorder: 'border-l-indigo-500', itemTitle: 'text-indigo-800', badgeBg: 'bg-indigo-50', badgeText: 'text-indigo-700', badgeBorder: 'border-indigo-200'
+    };
+}
+
+function renderProgramView(categories) {
+    const list = document.getElementById('list');
+    
+    if(categories.length === 0) {
+        list.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 p-10 text-center text-slate-500 shadow-sm print-card">
+            <i class="ph ph-magnifying-glass text-4xl mb-3 text-slate-300"></i><br>Tiada program / JK ditemui.
+        </div>`;
+        return;
+    }
+
+    if (tableMode) {
+        document.getElementById('viewIcon').className = 'ph ph-cards text-xl';
+        list.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden print-card overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[600px]">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs uppercase tracking-wider">
+                        <th class="p-4 font-semibold w-2/5">Program / Jawatankuasa</th>
+                        <th class="p-4 font-semibold text-center w-24">Bil Ahli</th>
+                        <th class="p-4 font-semibold">Senarai Ahli & Peranan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">
+                    ${categories.map(cat => {
+                        const theme = getCategoryColor(cat.kategori);
+                        return `
+                        <tr class="${theme.headBg} border-t-2 ${theme.headBorder}">
+                            <td colspan="3" class="p-3 pl-4">
+                                <div class="font-bold ${theme.headText} text-xs uppercase tracking-wider flex items-center gap-2">
+                                    <i class="ph-fill ph-folder-open text-base ${theme.icon}"></i> ${escapeHTML(cat.kategori)}
+                                </div>
+                            </td>
+                        </tr>
+                        ${cat.programs.map(prog => `
+                        <tr class="hover:bg-slate-50/50 transition-colors align-top bg-white">
+                            <td class="p-4 font-bold ${theme.itemTitle} pl-6 border-l-4 ${theme.itemBorder}">${escapeHTML(prog.program)}</td>
+                            <td class="p-4 text-center font-medium text-slate-500">
+                                <span class="${theme.badgeBg} ${theme.badgeText} px-2 py-1 rounded-md border ${theme.badgeBorder}">${prog.ahli.length}</span>
+                            </td>
+                            <td class="p-4">
+                                <ul class="space-y-2 text-slate-700">
+                                    ${prog.ahli.sort((a,b)=>a.peranan.localeCompare(b.peranan) || a.nama.localeCompare(b.nama)).map(a => `
+                                        <li class="flex items-start gap-2">
+                                            <span class="bg-slate-100 text-slate-600 text-[11px] font-bold px-2 py-0.5 rounded border border-slate-200 shrink-0 mt-0.5">${escapeHTML(a.peranan)}</span>
+                                            <span>${escapeHTML(a.nama)}</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </td>
+                        </tr>`).join('')}
+                    `}).join('')}
+                </tbody>
+            </table>
+        </div>`;
+    } else {
+        document.getElementById('viewIcon').className = 'ph ph-table text-xl';
+        list.innerHTML = categories.map(cat => {
+            const theme = getCategoryColor(cat.kategori);
+            return `
+            <div class="mb-8 break-inside-avoid">
+                <h2 class="text-sm font-bold ${theme.headText} uppercase tracking-wider border-b-2 ${theme.headBorder} pb-2 mb-4 pl-1 flex items-center gap-2">
+                    <i class="ph-fill ph-folder-open ${theme.icon}"></i> ${escapeHTML(cat.kategori)}
+                </h2>
+                <div class="grid grid-cols-1 gap-4 pl-2 border-l-2 ${theme.headBorder}">
+                    ${cat.programs.map(prog => `
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 print-card hover:shadow-md transition-shadow border-l-4 ${theme.itemBorder}">
+                            <div class="flex justify-between items-start gap-4 mb-4 pb-3 border-b border-slate-100">
+                                <div>
+                                    <h3 class="text-base font-bold ${theme.itemTitle} m-0">${escapeHTML(prog.program)}</h3>
+                                </div>
+                                <span class="${theme.badgeBg} ${theme.badgeText} rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap border ${theme.badgeBorder} flex items-center gap-1 shrink-0">
+                                    ${prog.ahli.length} <span class="hidden sm:inline">Ahli</span>
+                                </span>
+                            </div>
+                            
+                            <ul class="space-y-2 text-sm text-slate-700">
+                                ${prog.ahli.sort((a,b)=>a.peranan.localeCompare(b.peranan) || a.nama.localeCompare(b.nama)).map(a => `
+                                    <li class="flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-3 p-1.5 hover:bg-slate-50 rounded-lg transition-colors">
+                                        <span class="bg-slate-100 text-slate-600 text-[11px] font-bold px-2 py-1 rounded border border-slate-200 shrink-0 sm:w-40 break-words">${escapeHTML(a.peranan)}</span>
+                                        <span class="font-medium sm:mt-0.5 text-slate-800">${escapeHTML(a.nama)}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `}).join('');
+    }
+}
+
+function toggleTable() { 
+    tableMode = !tableMode; 
+    render(); 
+}
+
+function clearForm() {
+    requireAuth(() => {
+        document.getElementById('editIndex').value = '';
+        document.getElementById('personName').value = '';
+        document.getElementById('roleInput').value = '';
+        document.getElementById('programInput').value = '';
+        tempPortfolio = [];
+        renderFormPortfolio();
+    });
+}
+
+function openAddPerson() {
+    // Alih view ke Admin supaya borang dipaparkan jika pengguna tekan butang ini di view Pegawai
+    if(currentView !== 'admin') {
+        requireAuth(() => {
+            switchView('admin');
+            clearForm();
+            document.getElementById('personName').focus();
+            window.scrollTo({top:0, behavior:'smooth'});
+        });
+    } else {
+        clearForm();
+        document.getElementById('personName').focus();
+        window.scrollTo({top:0, behavior:'smooth'});
+    }
+}
+
+function addPortfolioToForm() {
+    requireAuth(() => {
+        const peranan = document.getElementById('roleInput').value.trim();
+        const program = document.getElementById('programInput').value.trim();
+        if (!peranan || !program) { 
+            customAlert('Sila masukkan maklumat Jawatan/Peranan dan JK/Program terlebih dahulu.'); 
+            return; 
+        }
+        tempPortfolio.push({peranan, program});
+        document.getElementById('roleInput').value = '';
+        document.getElementById('programInput').value = '';
+        document.getElementById('roleInput').focus();
+        renderFormPortfolio();
+    });
+}
+
+function renderFormPortfolio() {
+    const box = document.getElementById('formPortfolioList');
+    if (!tempPortfolio.length) { 
+        box.innerHTML = '<div class="text-center py-4 opacity-70">Belum ada portfolio ditambah.</div>'; 
+        return; 
+    }
+    box.innerHTML = `
+        <ul class="space-y-2">
+            ${tempPortfolio.map((x,i)=>`
+                <li class="flex items-start justify-between gap-2 bg-slate-50 p-2 rounded border border-slate-200">
+                    <div class="leading-tight">
+                        <span class="font-bold text-slate-700">${escapeHTML(x.peranan)}</span><br>
+                        <span class="text-xs text-slate-500">${escapeHTML(x.program)}</span>
+                    </div>
+                    <button class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1 rounded transition-colors flex-shrink-0" onclick="removeTemp(${i})" title="Buang">
+                        <i class="ph-bold ph-x"></i>
+                    </button>
+                </li>
+            `).join('')}
+        </ul>
+    `;
+    // Scroll to bottom of the list
+    box.scrollTop = box.scrollHeight;
+}
+
+function removeTemp(i) { 
+    requireAuth(() => {
+        tempPortfolio.splice(i,1); 
+        renderFormPortfolio(); 
+    });
+}
+
+function savePerson() {
+    requireAuth(() => {
+        const nama = document.getElementById('personName').value.trim();
+        if (!nama) { customAlert('Sila masukkan nama pegawai.'); return; }
+        if (!tempPortfolio.length) { customAlert('Sila tambah sekurang-kurangnya satu jawatan/peranan dalam senarai.'); return; }
+        
+        const idx = document.getElementById('editIndex').value;
+        const item = {nama, portfolio: tempPortfolio};
+        
+        if (idx === '') {
+            data.unshift(item); // Add to top
+        } else {
+            data[Number(idx)] = item;
+        }
+        
+        saveLocal(); 
+        clearForm(); 
+        render();
+    });
+}
+
+function editPerson(idx) {
+    requireAuth(() => {
+        const p = data[idx];
+        document.getElementById('editIndex').value = idx;
+        document.getElementById('personName').value = p.nama;
+        tempPortfolio = JSON.parse(JSON.stringify(p.portfolio));
+        renderFormPortfolio();
+        window.scrollTo({top:0, behavior:'smooth'});
+        document.getElementById('personName').focus();
+    });
+}
+
+function deletePersonConfirm(idx) {
+    requireAuth(() => {
+        customConfirm('Adakah anda pasti mahu memadam rekod ini secara kekal?', () => {
+            data.splice(idx,1); 
+            saveLocal(); 
+            render();
+        });
+    });
+}
+
+// --- Eksport & Import ---
+function exportCSV() {
+    let rows = [['Nama Pegawai','Bil','Jawatan / Peranan','JK / Program']];
+    data.forEach(p => p.portfolio.forEach((x,i)=>rows.push([p.nama, i+1, x.peranan, x.program])));
+    const csv = rows.map(r => r.map(v => '"' + String(v).replaceAll('"','""') + '"').join(',')).join('\n');
+    downloadFile('pemetaan_jk_sp_2026.csv', csv, 'text/csv;charset=utf-8');
+}
+
+function exportJSON() {
+    downloadFile('pemetaan_jk_sp_2026.json', JSON.stringify(data,null,2), 'application/json');
+}
+
+function downloadFile(filename, content, type) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], {type}));
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function importJSONTrigger() {
+    requireAuth(() => {
+        document.getElementById('jsonFile').click();
+    });
+}
+
+function importJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const imported = JSON.parse(e.target.result);
+            if (!Array.isArray(imported)) throw new Error('Format JSON tidak sah.');
+            data = imported;
+            saveLocal();
+            render();
+            customAlert('Data berjaya diimport dan dikemaskini.');
+        } catch (err) { 
+            customAlert('Gagal import JSON: ' + err.message); 
+        }
+        event.target.value = ''; // Reset file input
+    };
+    reader.readAsText(file);
+}
+
+function resetDataConfirm() {
+    requireAuth(() => {
+        customConfirm('Adakah anda pasti mahu memuat semula kepada data asal? Semua penambahan atau pindaan yang anda lakukan sebelum ini akan hilang.', () => {
+            data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            saveLocal();
+            clearForm();
+            render();
+        });
+    });
+}
+
+// Initial render - Start on Read Only Pegawai View
+switchView('pegawai');
+
+</script>
+</body>
+</html>
