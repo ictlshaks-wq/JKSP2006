@@ -117,7 +117,7 @@
                 <!-- Navigation Tabs -->
                 <div class="flex gap-2 border-b border-slate-200 mb-4 no-print overflow-x-auto custom-scroll">
                     <button onclick="switchView('pegawai')" id="tab-pegawai" class="px-5 py-3 border-b-2 font-bold text-sm transition-colors border-blue-600 text-blue-600 flex items-center gap-2 whitespace-nowrap">
-                        <i class="ph ph-user"></i> Ikut Pegawai
+                        <i class="ph ph-user"></i> Senarai Pegawai
                     </button>
                     <button onclick="switchView('program')" id="tab-program" class="px-5 py-3 border-b-2 font-bold text-sm transition-colors border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 whitespace-nowrap">
                         <i class="ph ph-folders"></i> Senarai Program / JK
@@ -964,13 +964,13 @@ function setCatFilter(cat) {
 
 function getProgramCategory(name) {
     const n = name.toLowerCase();
-    if (n.includes('perancangan strategik rpm') || n.includes('kluster') || n.includes('5p') || n.includes('impress') || n.includes('kunjung bantu') || n.includes('dialog konsolidasi') || n.includes('bengkel peningkatan kompetensi') || n.includes('ipt/ipts')) return '1. Jawatankuasa Perancangan Strategik RPM 2026-2035';
-    if (n.includes('data & analisis peperiksaan') || n.includes('peperiksaan awam') || n.includes('peperiksaan dalaman') || n.includes('matriks pembelajaran')) return '2. Jawatankuasa Data & Analisis Peperiksaan';
-    if (n.includes('pentaksiran berasaskan sekolah')) return '3. Jawatankuasa Pentaksiran Berasaskan Sekolah';
-    if (n.includes('moeis')) return '4. Jawatankuasa MOEIS';
-    if (n.includes('mata pelajaran elektif')) return '5. Jawatankuasa Penawaran & Penutupan MP Elektif';
-    if (n.includes('pengurusan mesyuarat') || n.includes('mesyuarat kurikulum') || n.includes('bengkel kerja sektor') || n.includes('mesyuarat pengurusan') || n.includes('takwim') || n.includes('maklum balas')) return '6. Jawatankuasa Pengurusan Mesyuarat';
-    if (n.includes('kewangan')) return '7. Jawatankuasa Kewangan';
+    if (n.includes('perancangan strategik rpm') || n.includes('kluster') || n.includes('5p') || n.includes('impress') || n.includes('kunjung bantu') || n.includes('dialog konsolidasi') || n.includes('bengkel peningkatan kompetensi') || n.includes('ipt/ipts')) return '1. JAWATANKUASA PERANCANGAN STRATEGIK RPM 2026-2035';
+    if (n.includes('data & analisis peperiksaan') || n.includes('peperiksaan awam') || n.includes('peperiksaan dalaman') || n.includes('matriks pembelajaran')) return '2. JAWATANKUASA DATA & ANALISIS PEPERIKSAAN';
+    if (n.includes('pentaksiran berasaskan sekolah')) return '3. JAWATANKUASA PENTAKSIRAN BERASASKAN SEKOLAH';
+    if (n.includes('moeis')) return '4. JAWATANKUASA MOEIS';
+    if (n.includes('mata pelajaran elektif')) return '5. JAWATANKUASA PENAWARAN DAN PENUTUPAN MATA PELAJARAN ELEKTIF';
+    if (n.includes('pengurusan mesyuarat') || n.includes('mesyuarat kurikulum') || n.includes('bengkel kerja sektor') || n.includes('takwim') || n.includes('maklum balas')) return '6. JAWATANKUASA PENGURUSAN MESYUARAT';
+    if (n.includes('kewangan')) return '7. JAWATANKUASA KEWANGAN';
     
     // Khusus 8.3 Tugas Khas diletakkan dahulu supaya kata kunci seperti 'Sektor' tepat
     if (n.includes('sisc+') || n.includes('think tank') || n.includes('stem kerajaan negeri') || n.includes('kualiti sektor') || n.includes('aduan awam') || n.includes('eksa') || n.includes('ladap') || n.includes('pemerkasaan pdp')) return '8.3 Tugas Khas';
@@ -982,6 +982,17 @@ function getProgramCategory(name) {
     if (n.includes('kssm') || n.includes('kssr') || n.includes('cefr') || n.includes('karakter') || n.includes('pemulihan') || n.includes('segak') || n.includes('bmi') || n.includes('pvma') || n.includes('pasm') || n.includes('pasr') || n.includes('amali sains') || n.includes('antarabangsa') || n.includes('pkjr') || n.includes('plc') || n.includes('upbmg') || n.includes('plan') || n.includes('pito') || n.includes('skm') || n.includes('smoa') || n.includes('timss') || n.includes('pisa') || n.includes('sea-plm') || n.includes('inovasi') || n.includes('hibrid') || n.includes('pintar') || n.includes('pit1') || n.includes('isppk') || n.includes('dlp') || n.includes('pendidikan stem') || n.includes('pemartabatan') || n.includes('literasi dan numerasi')) return '8.1 Pegawai Meja KPM';
 
     return 'Lain-Lain (Tidak Dikategorikan)';
+}
+
+function getMainProgramName(catName) {
+    if (catName.includes('1.')) return 'jawatankuasa perancangan strategik rpm 2026-2035';
+    if (catName.includes('2.')) return 'jawatankuasa data & analisis peperiksaan';
+    if (catName.includes('3.')) return 'jawatankuasa pentaksiran berasaskan sekolah';
+    if (catName.includes('4.')) return 'jawatankuasa moeis';
+    if (catName.includes('5.')) return 'jawatankuasa penawaran dan penutupan mata pelajaran elektif';
+    if (catName.includes('6.')) return 'jawatankuasa pengurusan mesyuarat';
+    if (catName.includes('7.')) return 'jawatankuasa kewangan';
+    return null;
 }
 
 function getFilteredProgramData() {
@@ -1000,13 +1011,13 @@ function getFilteredProgramData() {
 
     const categories = [];
     const catOrder = [
-        '1. Jawatankuasa Perancangan Strategik RPM 2026-2035',
-        '2. Jawatankuasa Data & Analisis Peperiksaan',
-        '3. Jawatankuasa Pentaksiran Berasaskan Sekolah',
-        '4. Jawatankuasa MOEIS',
-        '5. Jawatankuasa Penawaran & Penutupan MP Elektif',
-        '6. Jawatankuasa Pengurusan Mesyuarat',
-        '7. Jawatankuasa Kewangan',
+        '1. JAWATANKUASA PERANCANGAN STRATEGIK RPM 2026-2035',
+        '2. JAWATANKUASA DATA & ANALISIS PEPERIKSAAN',
+        '3. JAWATANKUASA PENTAKSIRAN BERASASKAN SEKOLAH',
+        '4. JAWATANKUASA MOEIS',
+        '5. JAWATANKUASA PENAWARAN DAN PENUTUPAN MATA PELAJARAN ELEKTIF',
+        '6. JAWATANKUASA PENGURUSAN MESYUARAT',
+        '7. JAWATANKUASA KEWANGAN',
         '8.1 Pegawai Meja KPM',
         '8.2 Program Khas',
         '8.3 Tugas Khas',
@@ -1039,6 +1050,20 @@ function getFilteredProgramData() {
     });
 
     return categories;
+}
+
+// FUNGSI BARU: Menentukan kedudukan susunan berdasarkan peranan rasmi
+function getRoleRank(role) {
+    const r = role.toLowerCase();
+    if (r === 'pengerusi') return 1;
+    if (r.includes('naib pengerusi')) return 2;
+    if (r.includes('timbalan pengerusi')) return 3;
+    if (r.includes('setiausaha') && !r.includes('penolong')) return 4;
+    if (r.includes('penolong setiausaha')) return 5;
+    if (r.includes('penyelaras') || r.includes('pegawai meja') || r.includes('owner') || r.includes('pemegang inisiatif')) return 6;
+    if (r.includes('ahli') || r.includes('ajk') || r.includes('unit')) return 7;
+    if (r.includes('petugas')) return 8;
+    return 99; // Default untuk lain-lain
 }
 
 function render() {
@@ -1157,25 +1182,20 @@ function renderTable(items) {
 // Fungsi pembantu untuk membezakan warna mengikut kategori
 function getCategoryColor(kategori) {
     if (kategori.includes('8.1')) return {
-        headBg: 'bg-emerald-50/80', headText: 'text-emerald-800', headBorder: 'border-emerald-200', icon: 'text-emerald-500',
-        itemBorder: 'border-l-emerald-500', itemTitle: 'text-emerald-800', badgeBg: 'bg-emerald-50', badgeText: 'text-emerald-700', badgeBorder: 'border-emerald-200'
+        headBg: 'bg-emerald-50/80', headText: 'text-emerald-800', badgeBg: 'bg-emerald-400'
     };
     if (kategori.includes('8.2')) return {
-        headBg: 'bg-amber-50/80', headText: 'text-amber-800', headBorder: 'border-amber-200', icon: 'text-amber-500',
-        itemBorder: 'border-l-amber-500', itemTitle: 'text-amber-800', badgeBg: 'bg-amber-50', badgeText: 'text-amber-700', badgeBorder: 'border-amber-200'
+        headBg: 'bg-amber-50/80', headText: 'text-amber-800', badgeBg: 'bg-amber-400'
     };
     if (kategori.includes('8.3')) return {
-        headBg: 'bg-purple-50/80', headText: 'text-purple-800', headBorder: 'border-purple-200', icon: 'text-purple-500',
-        itemBorder: 'border-l-purple-500', itemTitle: 'text-purple-800', badgeBg: 'bg-purple-50', badgeText: 'text-purple-700', badgeBorder: 'border-purple-200'
+        headBg: 'bg-purple-50/80', headText: 'text-purple-800', badgeBg: 'bg-purple-400'
     };
     if (kategori.includes('Lain-Lain')) return {
-        headBg: 'bg-slate-100/80', headText: 'text-slate-700', headBorder: 'border-slate-200', icon: 'text-slate-400',
-        itemBorder: 'border-l-slate-400', itemTitle: 'text-slate-700', badgeBg: 'bg-slate-100', badgeText: 'text-slate-600', badgeBorder: 'border-slate-200'
+        headBg: 'bg-slate-100/80', headText: 'text-slate-700', badgeBg: 'bg-slate-400'
     };
     // Default Jawatankuasa Utama (1 - 7)
     return {
-        headBg: 'bg-indigo-50/80', headText: 'text-indigo-800', headBorder: 'border-indigo-200', icon: 'text-indigo-500',
-        itemBorder: 'border-l-indigo-500', itemTitle: 'text-indigo-800', badgeBg: 'bg-indigo-50', badgeText: 'text-indigo-700', badgeBorder: 'border-indigo-200'
+        headBg: 'bg-indigo-50/80', headText: 'text-indigo-900', badgeBg: 'bg-indigo-500'
     };
 }
 
@@ -1190,83 +1210,127 @@ function renderProgramView(categories) {
     }
 
     if (tableMode) {
+        // Grid Table Sederhana
         document.getElementById('viewIcon').className = 'ph ph-cards text-xl';
-        list.innerHTML = `
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden print-card overflow-x-auto">
-            <table class="w-full text-left border-collapse min-w-[600px]">
+        list.innerHTML = `<div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden print-card overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[600px] text-sm">
                 <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs uppercase tracking-wider">
+                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase tracking-wider">
                         <th class="p-4 font-semibold w-2/5">Program / Jawatankuasa</th>
-                        <th class="p-4 font-semibold text-center w-24">Bil Ahli</th>
                         <th class="p-4 font-semibold">Senarai Ahli & Peranan</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 text-sm">
-                    ${categories.map(cat => {
-                        const theme = getCategoryColor(cat.kategori);
-                        return `
-                        <tr class="${theme.headBg} border-t-2 ${theme.headBorder}">
-                            <td colspan="3" class="p-3 pl-4">
-                                <div class="font-bold ${theme.headText} text-xs uppercase tracking-wider flex items-center gap-2">
-                                    <i class="ph-fill ph-folder-open text-base ${theme.icon}"></i> ${escapeHTML(cat.kategori)}
-                                </div>
+                <tbody class="divide-y divide-slate-100">
+                    ${categories.map(cat => `
+                        <tr class="${getCategoryColor(cat.kategori).headBg} border-t-2 border-slate-200">
+                            <td colspan="2" class="p-3 pl-4 font-bold text-slate-800 text-xs uppercase tracking-wider">
+                                ${escapeHTML(cat.kategori)}
                             </td>
                         </tr>
                         ${cat.programs.map(prog => `
                         <tr class="hover:bg-slate-50/50 transition-colors align-top bg-white">
-                            <td class="p-4 font-bold ${theme.itemTitle} pl-6 border-l-4 ${theme.itemBorder}">${escapeHTML(prog.program)}</td>
-                            <td class="p-4 text-center font-medium text-slate-500">
-                                <span class="${theme.badgeBg} ${theme.badgeText} px-2 py-1 rounded-md border ${theme.badgeBorder}">${prog.ahli.length}</span>
-                            </td>
+                            <td class="p-4 font-bold text-slate-800 pl-6 border-l-4 border-l-slate-300">${escapeHTML(prog.program)}</td>
                             <td class="p-4">
-                                <ul class="space-y-2 text-slate-700">
-                                    ${prog.ahli.sort((a,b)=>a.peranan.localeCompare(b.peranan) || a.nama.localeCompare(b.nama)).map(a => `
-                                        <li class="flex items-start gap-2">
-                                            <span class="bg-slate-100 text-slate-600 text-[11px] font-bold px-2 py-0.5 rounded border border-slate-200 shrink-0 mt-0.5">${escapeHTML(a.peranan)}</span>
-                                            <span>${escapeHTML(a.nama)}</span>
-                                        </li>
-                                    `).join('')}
-                                </ul>
+                                <table class="w-full text-slate-700">
+                                    <tbody>
+                                        ${prog.ahli.sort((a,b)=> getRoleRank(a.peranan) - getRoleRank(b.peranan) || a.nama.localeCompare(b.nama)).map((a, idx, arr) => {
+                                            const showRole = idx === 0 || arr[idx-1].peranan !== a.peranan;
+                                            return `
+                                            <tr class="align-top">
+                                                <td class="py-1 pr-2 w-40 font-medium">${showRole ? escapeHTML(a.peranan) : ''}</td>
+                                                <td class="py-1 pr-2 w-2 font-bold text-slate-400">${showRole ? ':' : ''}</td>
+                                                <td class="py-1">${escapeHTML(a.nama)}</td>
+                                            </tr>`;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
                             </td>
                         </tr>`).join('')}
-                    `}).join('')}
+                    `).join('')}
                 </tbody>
             </table>
         </div>`;
     } else {
+        // Mode Dokumen Rasmi
         document.getElementById('viewIcon').className = 'ph ph-table text-xl';
         list.innerHTML = categories.map(cat => {
             const theme = getCategoryColor(cat.kategori);
+            const mainProgName = getMainProgramName(cat.kategori);
+            
+            let mainAhli = [];
+            let subProgs = [];
+
+            if (mainProgName) {
+                cat.programs.forEach(p => {
+                    if (p.program.toLowerCase() === mainProgName) {
+                        mainAhli = mainAhli.concat(p.ahli);
+                    } else {
+                        subProgs.push(p);
+                    }
+                });
+            } else {
+                subProgs = cat.programs;
+            }
+
             return `
-            <div class="mb-8 break-inside-avoid">
-                <h2 class="text-sm font-bold ${theme.headText} uppercase tracking-wider border-b-2 ${theme.headBorder} pb-2 mb-4 pl-1 flex items-center gap-2">
-                    <i class="ph-fill ph-folder-open ${theme.icon}"></i> ${escapeHTML(cat.kategori)}
+            <div class="mb-8 bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8 print-card break-inside-avoid relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 ${theme.badgeBg}"></div>
+                
+                <h2 class="text-lg md:text-xl font-bold ${theme.headText} tracking-wide mb-6 pb-2 border-b border-slate-100">
+                    ${escapeHTML(cat.kategori)}
                 </h2>
-                <div class="grid grid-cols-1 gap-4 pl-2 border-l-2 ${theme.headBorder}">
-                    ${cat.programs.map(prog => `
-                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 print-card hover:shadow-md transition-shadow border-l-4 ${theme.itemBorder}">
-                            <div class="flex justify-between items-start gap-4 mb-4 pb-3 border-b border-slate-100">
-                                <div>
-                                    <h3 class="text-base font-bold ${theme.itemTitle} m-0">${escapeHTML(prog.program)}</h3>
+
+                <!-- AJK INDUK -->
+                ${mainAhli.length > 0 ? `
+                    <div class="mb-8 ml-2 md:ml-8">
+                        <table class="w-full text-slate-800 text-sm md:text-base">
+                            <tbody>
+                                ${mainAhli.sort((a,b)=> getRoleRank(a.peranan) - getRoleRank(b.peranan) || a.nama.localeCompare(b.nama)).map((a, idx, arr) => {
+                                    const showRole = idx === 0 || arr[idx-1].peranan !== a.peranan;
+                                    return `
+                                    <tr class="align-top">
+                                        <td class="py-1.5 pr-2 w-40 md:w-56 font-medium">${showRole ? escapeHTML(a.peranan) : ''}</td>
+                                        <td class="py-1.5 pr-4 w-4 font-bold text-slate-400">${showRole ? ':' : ''}</td>
+                                        <td class="py-1.5 font-medium">${escapeHTML(a.nama)}</td>
+                                    </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                ` : ''}
+
+                <!-- SUB PROGRAM -->
+                ${subProgs.length > 0 ? `
+                    <div class="${mainAhli.length > 0 ? 'border-t border-slate-100 pt-6' : ''}">
+                        <div class="grid grid-cols-1 gap-4">
+                            ${subProgs.sort((a,b) => a.program.localeCompare(b.program)).map((prog, pIdx) => `
+                                <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                                    <h4 class="font-bold text-slate-800 mb-3 text-sm md:text-base">
+                                        ${escapeHTML(prog.program)}
+                                    </h4>
+                                    <table class="w-full text-slate-700 text-sm ml-2 md:ml-8">
+                                        <tbody>
+                                            ${prog.ahli.sort((a,b)=> getRoleRank(a.peranan) - getRoleRank(b.peranan) || a.nama.localeCompare(b.nama)).map((a, idx, arr) => {
+                                                const showRole = idx === 0 || arr[idx-1].peranan !== a.peranan;
+                                                return `
+                                                <tr class="align-top">
+                                                    <td class="py-1.5 pr-2 w-36 md:w-48 font-medium">${showRole ? escapeHTML(a.peranan) : ''}</td>
+                                                    <td class="py-1.5 pr-3 w-4 font-bold text-slate-400">${showRole ? ':' : ''}</td>
+                                                    <td class="py-1.5">${escapeHTML(a.nama)}</td>
+                                                </tr>
+                                                `;
+                                            }).join('')}
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <span class="${theme.badgeBg} ${theme.badgeText} rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap border ${theme.badgeBorder} flex items-center gap-1 shrink-0">
-                                    ${prog.ahli.length} <span class="hidden sm:inline">Ahli</span>
-                                </span>
-                            </div>
-                            
-                            <ul class="space-y-2 text-sm text-slate-700">
-                                ${prog.ahli.sort((a,b)=>a.peranan.localeCompare(b.peranan) || a.nama.localeCompare(b.nama)).map(a => `
-                                    <li class="flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-3 p-1.5 hover:bg-slate-50 rounded-lg transition-colors">
-                                        <span class="bg-slate-100 text-slate-600 text-[11px] font-bold px-2 py-1 rounded border border-slate-200 shrink-0 sm:w-40 break-words">${escapeHTML(a.peranan)}</span>
-                                        <span class="font-medium sm:mt-0.5 text-slate-800">${escapeHTML(a.nama)}</span>
-                                    </li>
-                                `).join('')}
-                            </ul>
+                            `).join('')}
                         </div>
-                    `).join('')}
-                </div>
+                    </div>
+                ` : ''}
             </div>
-        `}).join('');
+            `;
+        }).join('');
     }
 }
 
